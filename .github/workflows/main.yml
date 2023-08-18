@@ -1,0 +1,58 @@
+name: run build.py
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 12 * * *'
+env:
+  GIT_USER: lfkdsk
+  GIT_EMAIL: lfkdsk@gmail.com
+  THEME_REPO: lfkdsk/hexo-theme-type
+  THEME_BRANCH: main
+  BASE_URL: https://github.com/lfkdsk/gallery/raw/master
+  GALLERY_REPO: lfkdsk/gallery
+  GALLERY_BRANCH: main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: secrets
+    steps:
+    - uses: actions/checkout@v3
+    - name: Checkout theme repo
+      uses: actions/checkout@v2
+      with:
+        repository: ${{ env.THEME_REPO }}
+        ref: ${{ env.THEME_BRANCH }}
+        path: themes/hexo-theme-type
+    - name: Checkout gallery repo
+      uses: actions/checkout@v2
+      with:
+        repository: ${{ env.GALLERY_REPO }}
+        ref: ${{ env.GALLERY_BRANCH }}
+        path: gallery
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.10' 
+    - run: pip install -r requirements.txt
+    - name: Generate Doc
+      run: |
+        echo $BASE_URL
+        python build.py
+    - name: Install Dependencies & Build
+      run: |
+        npm install
+        npm ci
+        npm install hexo-cli -g
+        hexo g
+        ls ./public        
+    - name: Deploy
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        publish_dir: ./public
+        github_token: ${{ secrets.GH_PAGES_DEPLOY }}
+        user_name: ${{ env.GIT_USER }}
+        user_email: ${{ env.GIT_EMAIL }}
+        commit_msg: ${{ github.event.head_commit.message }}  
