@@ -13,7 +13,7 @@ env:
   THEME_BRANCH: main
   BASE_URL: https://github.com/lfkdsk/gallery/raw/master
   GALLERY_REPO: lfkdsk/gallery
-  GALLERY_BRANCH: main
+  GALLERY_BRANCH: master
 
 jobs:
   build:
