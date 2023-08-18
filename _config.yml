@@ -17,8 +17,8 @@ timezone:
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
-url: https://lfkdsk.github.io/album
-root: /
+url: https://lfkdsk.github.io/
+root: /album
 permalink: :year/:abbrlink/
 permalink_defaults:
 # abbrlink config
