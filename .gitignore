@@ -11,3 +11,4 @@ themes/hexo-theme-type
 source/gallery/vol*.md
 _data/album.yml
 gallery/
+source/_data/album.yml
