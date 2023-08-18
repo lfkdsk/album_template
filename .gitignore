@@ -10,4 +10,4 @@ public/
 themes/hexo-theme-type
 source/gallery/vol*.md
 _data/album.yml
-gallery/*
+gallery/
