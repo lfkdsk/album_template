@@ -1,0 +1,54 @@
+name: iTypen.APP auto publish
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  publish_ITPN:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: mohuishou/notion-blog-actions/notion@main
+        with:
+          token: ${{ secrets.NOTION_TOKEN }}
+          token_v2: ${{ secrets.NOTION_TOKEN_V2 }}
+          space_id: "photup"
+          database_id: 1f6c6324c3274060a599088934e98f78
+          output: "./tmp/"
+      - name: "migrate image"
+        uses: mohuishou/notion-blog-actions/migrate@main
+        with:
+          input: "./tmp/*.md"
+      - name: "cp md files"
+        run: |
+          cp -f tmp/*.md source/_posts/notion/
+          rm -rf tmp
+      - name: Checkout
+        uses: actions/checkout@v1
+        with:
+          submodules: true # Checkout private submodules(themes or something else).
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 10.x
+      - name: install_env
+        run: npm install
+      - name: hexo_generate
+        run: |
+          ls
+          npm run clean
+          npm run generate
+      - name: hexo_publish
+        run: |
+          \cp -f assets/CNAME public/CNAME
+          cd ./public
+          git init
+          git config --global push.default matching
+          git config --global user.email "hiaiokr@gmail.com"
+          git config --global user.name "aiokr"
+          git add --all .
+          git commit -m "Auto Builder of aiokr's blog"
+          git push --force "https://${{secrets.action_key}}@github.com/aiokr/iTypen-Pages.git" master

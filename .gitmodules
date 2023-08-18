@@ -1,0 +1,4 @@
+[submodule "hexo-theme-type"]
+        path = themes/hexo-theme-type
+        url = https://github.com/lfkdsk/hexo-theme-type.git
+        branch = main

@@ -1,0 +1,13 @@
+.DS_Store
+Thumbs.db
+db.json
+*.log
+node_modules/
+public/
+.deploy*/
+.node_modules/
+.vscode/settings.json
+themes/hexo-theme-type
+source/gallery/vol*.md
+_data/album.yml
+gallery/*
