@@ -11,9 +11,10 @@ env:
   GIT_EMAIL: lfkdsk@gmail.com
   THEME_REPO: lfkdsk/hexo-theme-type
   THEME_BRANCH: main
+  BASE_URL: https://github.com/lfkdsk/gallery/raw/master
   GALLERY_REPO: lfkdsk/gallery
   GALLERY_BRANCH: main
-  
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -30,18 +31,16 @@ jobs:
       uses: actions/checkout@v2
       with:
         repository: ${{ env.GALLERY_REPO }}
-        ref: ${{ env.THEME_BRANCH }}
-        path: themes/hexo-theme-type
+        ref: ${{ env.GALLERY_BRANCH }}
+        path: gallery
     - uses: actions/setup-python@v4
       with:
         python-version: '3.10' 
     - run: pip install -r requirements.txt
     - name: Generate Doc
       run: |
-        echo $RSS_URL
-        python generate.py
-      env:
-        RSS_URL: ${{ secrets.RSS_URL }} 
+        echo $BASE_URL
+        python build.py
     - name: Install Dependencies & Build
       run: |
         npm install
@@ -54,6 +53,6 @@ jobs:
       with:
         publish_dir: ./public
         github_token: ${{ secrets.GH_PAGES_DEPLOY }}
-        user_name: ${{ secrets.GIT_USER }}
-        user_email: ${{ secrets.GIT_EMAIL }}
+        user_name: ${{ env.GIT_USER }}
+        user_email: ${{ env.GIT_EMAIL }}
         commit_msg: ${{ github.event.head_commit.message }}  
