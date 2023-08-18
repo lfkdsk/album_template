@@ -10,13 +10,13 @@ if not base_url:
 if not os.path.exists("./gallery/"):
     raise "need git clone gallery first."
 
-with open("./gallery/README.md", 'r') as f:
+with open("./gallery/README.yml", 'r') as f:
     y = yaml.safe_load(f)
 
 if not y:
-    raise "could not found README.md"
+    raise "could not found README.yml"
 
-shutil.copyfile('./gallery/README.md', './source/_data/album.yml')
+shutil.copyfile('./gallery/README.yml', './source/_data/album.yml')
 index = 0
 for d in y:
     title = d
