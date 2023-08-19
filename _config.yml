@@ -11,7 +11,7 @@ keywords:
   - photo
   - video
   - blog
-author: Komorebi
+author: lfkdsk
 language: zh-CN
 timezone: 
 
@@ -151,16 +151,16 @@ algolia:
     - permalink
     - date
 
-feed:
-  type: atom
-  path: atom.xml
-  limit: false
-  hub:
-  content: false
-  content_limit: 140
-  content_limit_delim: " "
-  order_by: -date
-  template: ./source/atom.xml
+# feed:
+#   type: atom
+#   path: atom.xml
+#   limit: false
+#   hub:
+#   content: false
+#   content_limit: 140
+#   content_limit_delim: " "
+#   order_by: -date
+#   template: ./source/atom.xml
 
 jsonContent:
   meta: true
