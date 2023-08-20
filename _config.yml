@@ -6,6 +6,7 @@
 title: 照片集
 subtitle: Take Photo Think Seriously
 description: 拿起相机，认真思考
+cover: 'https://github.com/lfkdsk/picx-images-hosting/raw/master/20230817/IMG_7586.4e91my1ve140.17iz0sa56gik.webp'
 keywords: 
   - photography
   - photo
@@ -14,6 +15,12 @@ keywords:
 author: lfkdsk
 language: zh-CN
 timezone: 
+
+footer_logo: 
+  use: self
+  self:
+    link: 'https://lfkdsk.github.io'
+    src: 'https://github.com/lfkdsk/picx-images-hosting/raw/master/20230817/tripper2white.2pbuwaqvndu0.webp'
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
