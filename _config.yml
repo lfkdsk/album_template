@@ -248,3 +248,7 @@ markdown:
     lazyload: true
     prepend_root: false
     post_asset: false
+
+photography_page:
+  slogan: true
+  slogan_descr: 'The moments when I pressed the shutter, the moments are forever.'
