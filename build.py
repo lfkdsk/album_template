@@ -14,11 +14,10 @@ with open("./gallery/CONFIG.yml", 'r', encoding="utf-8") as g, open("./_config.y
     for item in g_file:
         print(item)
         c_file[str(item)] = g_file[item]
-        if item == 'url':
-            base_url = f'{g_file[item]}/raw/master'
     print(list(c_file))        
     yaml.safe_dump(c_file, n, allow_unicode=True)
 
+base_url = os.getenv("BASE_URL")
 if not base_url:
     raise "need set base url in github action."
 
