@@ -29,6 +29,7 @@ if not y:
 
 shutil.copyfile('./gallery/README.yml', './source/_data/album.yml')
 index = 0
+
 for d in y:
     title = d
     print(title)
@@ -44,11 +45,22 @@ for d in y:
         for l in f.readlines():
             text += l
     photos = ''
+    index_yml_name = f"./gallery/{url}/index.yml"
+    if os.path.exists(index_yml_name):
+        with open(index_yml_name, 'r', encoding="utf-8") as i:
+            index_yml = yaml.safe_load(i)
     for i in os.listdir(gallery_dir):
         name, ext = os.path.splitext(i)
-        if ext == '.md':
+        desc = ' - · - '
+        if 'index_yml' in locals() and name in index_yml:
+            desc = index_yml[name]['desc']
+        if ext == '.md' or ext == '.yml':
             continue
-        p = f'- {base_url}/{url}/{i}\n'
+        p = f'''
+- name: {name} 
+  url: {base_url}/{url}/{i}
+  desc: "{desc}"
+'''
         photos += p
     tmp = f'''
 ---
