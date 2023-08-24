@@ -28,7 +28,7 @@ if not y:
     raise "could not found README.yml"
 
 # overwrite _config theme.
-shutil.copyfile('./_config.type.yml', './themes/hexo-theme-type/_config.yml')
+# shutil.copyfile('./_config.type.yml', './themes/hexo-theme-type/_config.yml')
 shutil.copyfile('./gallery/README.yml', './source/_data/album.yml')
 index = 0
 
