@@ -51,7 +51,7 @@ for d in y:
     if os.path.exists(index_yml_name):
         with open(index_yml_name, 'r', encoding="utf-8") as i:
             index_yml = yaml.safe_load(i)
-    for i in os.listdir(gallery_dir):
+    for i in sorted(os.listdir(gallery_dir)):
         name, ext = os.path.splitext(i)
         desc = ' - · - '
         if 'index_yml' in locals() and name in index_yml:
