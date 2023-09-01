@@ -52,16 +52,33 @@ for d in y:
     if os.path.exists(index_yml_name):
         with open(index_yml_name, 'r', encoding="utf-8") as i:
             index_yml = yaml.safe_load(i)
-    for i in natsorted(os.listdir(gallery_dir)):
+
+    sorted_files = natsorted(os.listdir(gallery_dir))
+    for i in sorted_files:
         name, ext = os.path.splitext(i)
         desc = ' - · - '
+        is_video = False
         if 'index_yml' in locals() and name in index_yml:
             desc = index_yml[name]['desc']
-        if ext == '.md' or ext == '.yml':
+        if ext == '.md' or ext == '.yml' or name.startswith('__'):
+            print(f"skip {name}{ext}")
             continue
+        video = ""
+        img_url = f'{base_url}/{url}/{i}'
+        if ext[1:].lower() in ["mov", "mp4"]:
+            is_video = True
+            for thum_name, file in [(os.path.splitext(n)[0], n) for n in sorted_files]:
+                if thum_name == f'__{name}':
+                    video = file
+                    print(f'found video {video}')
+            if video == "":
+                continue # cannot found thumtail.
+            video = f'{base_url}/{url}/{video}'
+            img_url, video = video, img_url
         p = f'''
 - name: {name} 
-  url: {base_url}/{url}/{i}
+  video: {video}
+  url: {img_url}
   desc: "{desc}"
 '''
         photos += p
