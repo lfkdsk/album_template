@@ -120,7 +120,7 @@ social_link:
 start_time: 2017
 # 如果设置 count 选项，需要运行 npm install hexo-symbols-count-time --save
 # 'count' need run 'npm install hexo-symbols-count-time --save'
-count: true
+count: false
 icp: 
 
 # CDN LOGO
@@ -181,7 +181,7 @@ search:
   use: algolia
 
 # Busuanzi Count 不蒜子计数
-busuanzi: false
+busuanzi: true
 
 # Google Analytics 谷歌分析
 # cloudflare-workers-async-google-analytics

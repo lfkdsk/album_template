@@ -128,7 +128,7 @@ sitemap:
   rel: false
 
 symbols_count_time:
-  symbols: true
+  symbols: false
   time: true
   total_symbols: true
   total_time: true
