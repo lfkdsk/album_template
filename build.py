@@ -40,9 +40,11 @@ for d in y:
     cover = element['cover']
     url = element['url']
     date = element['date']
+    style = element.get('style', 'default')
     index_md = f"./gallery/{url}/index.md"
     gallery_dir = f"./gallery/{url}"
     text = ''
+
     if os.path.exists(f"./gallery/{url}/index.md"):
         f = open(index_md, 'r')
         for l in f.readlines():
@@ -89,6 +91,7 @@ date: {date}
 cover: {cover}
 layout: album
 permalink: {url}
+style: {style}
 photos:
 {photos}
 ---
