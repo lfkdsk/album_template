@@ -74,6 +74,8 @@ for d in y:
 
     sorted_files = natsorted(os.listdir(gallery_dir))
     pathlib.Path(f"./{thumbnail_public}/{url}/").mkdir(parents=True, exist_ok=True)
+    cover, _ = os.path.splitext(f"./gallery/{url}/{cover}")
+    cover = f'{thumbnail_url}/{url}/{cover}.webp'
 
     for i in sorted_files:
         name, ext = os.path.splitext(i)
