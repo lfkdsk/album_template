@@ -5,7 +5,7 @@ import shutil
 from PIL import Image
 from natsort import natsorted
 
-gen_thumbnail = True
+gen_thumbnail = False
 
 def thumbnail_image(input_file, output_file, max_size=(1000, 1000), resample=3, ext='webp'):
     im = Image.open(input_file)
