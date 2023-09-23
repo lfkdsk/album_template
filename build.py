@@ -2,14 +2,25 @@ import yaml
 import os
 import pathlib
 import shutil
+from PIL import Image
 from natsort import natsorted
 
+gen_thumbnail = True
+
+def thumbnail_image(input_file, output_file, max_size=(500, 500), resample=3, ext='webp'):
+    im = Image.open(input_file)
+    im.thumbnail(max_size, resample=resample)
+    im.save(output_file, format=ext, optimize=True)
+
+# check paths.
 if not os.path.exists("./gallery/"):
     raise "need git clone gallery first."
 
+# check config.
 if not os.path.exists("./gallery/CONFIG.yml") or not os.path.exists('./gallery/README.yml'):
     raise "CONFIG or README is null."
 
+# re-generate config file.
 with open("./gallery/CONFIG.yml", 'r', encoding="utf-8") as g, open("./_config.yml", "r+", encoding="utf-8") as c, open("./new_config.yml", "w", encoding="utf-8") as n:
     g_file, c_file = yaml.safe_load(g), yaml.safe_load(c)
     for item in g_file:
@@ -18,8 +29,10 @@ with open("./gallery/CONFIG.yml", 'r', encoding="utf-8") as g, open("./_config.y
     print(list(c_file))        
     yaml.safe_dump(c_file, n, allow_unicode=True)
 
+thumbnail_url = os.getenv("THUMBNAIL_URL")
 base_url = os.getenv("BASE_URL")
-if not base_url:
+thumbnail_public = "thumbnail_public"
+if not base_url or not base_url:
     raise "need set base url in github action."
 
 with open("./gallery/README.yml", 'r') as f:
@@ -31,6 +44,9 @@ if not y:
 # overwrite _config theme.
 # shutil.copyfile('./_config.type.yml', './themes/hexo-theme-type/_config.yml')
 shutil.copyfile('./gallery/README.yml', './source/_data/album.yml')
+
+pathlib.Path(f"./{thumbnail_public}/").mkdir(parents=True, exist_ok=True)
+
 index = 0
 
 for d in y:
@@ -57,6 +73,8 @@ for d in y:
             index_yml = yaml.safe_load(i)
 
     sorted_files = natsorted(os.listdir(gallery_dir))
+    pathlib.Path(f"./{thumbnail_public}/{url}/").mkdir(parents=True, exist_ok=True)
+
     for i in sorted_files:
         name, ext = os.path.splitext(i)
         desc = ' - · - '
@@ -68,6 +86,10 @@ for d in y:
             continue
         video = ""
         img_url = f'{base_url}/{url}/{i}'
+        img_thumbnail_url = f'{thumbnail_url}/{url}/{name}.webp'
+        # compress image
+        if gen_thumbnail:
+            thumbnail_image(f'{gallery_dir}/{i}', output_file=f'./{thumbnail_public}/{url}/{name}.webp')
         if ext[1:].lower() in ["mov", "mp4"]:
             is_video = True
             for thum_name, file in [(os.path.splitext(n)[0], n) for n in sorted_files]:
@@ -81,6 +103,7 @@ for d in y:
         p = f'''
 - name: {name} 
   video: {video}
+  thum: {img_thumbnail_url}
   url: {img_url}
   desc: "{desc}"
 '''
