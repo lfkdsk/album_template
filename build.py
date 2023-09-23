@@ -2,14 +2,15 @@ import yaml
 import os
 import pathlib
 import shutil
-from PIL import Image
+from PIL import Image, ImageOps
 from natsort import natsorted
 
-gen_thumbnail = False
+gen_thumbnail = True
 
 def thumbnail_image(input_file, output_file, max_size=(1000, 1000), resample=3, ext='webp'):
     im = Image.open(input_file)
     im.thumbnail(max_size, resample=resample)
+    im = ImageOps.exif_transpose(im)
     im.save(output_file, format=ext, optimize=True)
 
 # check paths.
