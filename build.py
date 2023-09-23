@@ -89,9 +89,10 @@ for d in y:
         video = ""
         img_url = f'{base_url}/{url}/{i}'
         img_thumbnail_url = f'{thumbnail_url}/{url}/{name}.webp'
+        thumbnail_name =f'./{thumbnail_public}/{url}/{name}.webp'
         # compress image
-        if gen_thumbnail:
-            thumbnail_image(f'{gallery_dir}/{i}', output_file=f'./{thumbnail_public}/{url}/{name}.webp')
+        if gen_thumbnail and not os.path.exists(thumbnail_name):
+            thumbnail_image(f'{gallery_dir}/{i}', output_file=thumbnail_name)
         if ext[1:].lower() in ["mov", "mp4"]:
             is_video = True
             for thum_name, file in [(os.path.splitext(n)[0], n) for n in sorted_files]:
