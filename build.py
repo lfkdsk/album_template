@@ -7,7 +7,7 @@ from natsort import natsorted
 
 gen_thumbnail = True
 
-def thumbnail_image(input_file, output_file, max_size=(500, 500), resample=3, ext='webp'):
+def thumbnail_image(input_file, output_file, max_size=(1000, 1000), resample=3, ext='webp'):
     im = Image.open(input_file)
     im.thumbnail(max_size, resample=resample)
     im.save(output_file, format=ext, optimize=True)
@@ -31,6 +31,7 @@ with open("./gallery/CONFIG.yml", 'r', encoding="utf-8") as g, open("./_config.y
 
 thumbnail_url = os.getenv("THUMBNAIL_URL")
 base_url = os.getenv("BASE_URL")
+thumbnail_size = os.getenv("THUMBNAIL_SIZE") if os.getenv("THUMBNAIL_SIZE") is not None else 1000
 thumbnail_public = "thumbnail_public"
 if not base_url or not base_url:
     raise "need set base url in github action."
@@ -91,8 +92,8 @@ for d in y:
         img_thumbnail_url = f'{thumbnail_url}/{url}/{name}.webp'
         thumbnail_name =f'./{thumbnail_public}/{url}/{name}.webp'
         # compress image
-        if gen_thumbnail and not os.path.exists(thumbnail_name):
-            thumbnail_image(f'{gallery_dir}/{i}', output_file=thumbnail_name)
+        if gen_thumbnail or not os.path.exists(thumbnail_name):
+            thumbnail_image(f'{gallery_dir}/{i}', output_file=thumbnail_name, max_size=(thumbnail_size, thumbnail_size))
         if ext[1:].lower() in ["mov", "mp4"]:
             is_video = True
             for thum_name, file in [(os.path.splitext(n)[0], n) for n in sorted_files]:
