@@ -21,21 +21,23 @@ if not os.path.exists("./gallery/"):
 if not os.path.exists("./gallery/CONFIG.yml") or not os.path.exists('./gallery/README.yml'):
     raise "CONFIG or README is null."
 
+config = {}
 # re-generate config file.
 with open("./gallery/CONFIG.yml", 'r', encoding="utf-8") as g, open("./_config.yml", "r+", encoding="utf-8") as c, open("./new_config.yml", "w", encoding="utf-8") as n:
     g_file, c_file = yaml.safe_load(g), yaml.safe_load(c)
     for item in g_file:
         print(item)
         c_file[str(item)] = g_file[item]
+        config[str(item)] = g_file[item]
     print(list(c_file))        
     yaml.safe_dump(c_file, n, allow_unicode=True)
 
-thumbnail_url = os.getenv("THUMBNAIL_URL")
-base_url = os.getenv("BASE_URL")
-thumbnail_size = os.getenv("THUMBNAIL_SIZE") if os.getenv("THUMBNAIL_SIZE") is not None else 1000
+thumbnail_url = config["thumbnail_url"]
+base_url = config["base_url"]
+thumbnail_size = config.get("thumbnail_size", 1000)
 thumbnail_public = "thumbnail_public"
 if not base_url or not base_url:
-    raise "need set base url in github action."
+    raise "need set base url in github CONFIG.yml ."
 
 with open("./gallery/README.yml", 'r') as f:
     y = yaml.safe_load(f)
