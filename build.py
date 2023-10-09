@@ -59,7 +59,7 @@ for d in y:
     element = y[d]
     cover = element['cover']
     url = element['url']
-    date = element['date']
+    date = element.get('date', '')
     subtitle = element.get('subtitle', '')
     style = element.get('style', 'default')
     index_md = f"./gallery/{url}/index.md"
