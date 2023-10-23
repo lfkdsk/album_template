@@ -61,6 +61,7 @@ for d in y:
     url = element['url']
     date = element.get('date', '')
     subtitle = element.get('subtitle', '')
+    location = element.get('location', [])
     style = element.get('style', 'default')
     index_md = f"./gallery/{url}/index.md"
     gallery_dir = f"./gallery/{url}"
@@ -122,7 +123,9 @@ date: {date}
 cover: {cover}
 layout: album
 permalink: {url}
+url: {url}
 style: {style}
+location: {location}
 subtitle: {subtitle}
 photos:
 {photos}
