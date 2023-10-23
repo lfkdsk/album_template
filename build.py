@@ -85,6 +85,19 @@ for d in y:
     for i in sorted_files:
         name, ext = os.path.splitext(i)
         desc = ' - · - '
+        exf = open(f'{gallery_dir}/{i}', 'rb')
+        tags = exifread.process_file(exf)
+        tag_text = ''
+        for tag in tags.keys():
+            if tag in ['Image Make', 'Image Model', 'EXIF LensModel','EXIF FNumber', 'EXIF ISOSpeedRatings', 'EXIF ShutterSpeedValue',]:
+              pre = ''
+              if tag == 'EXIF FNumber':
+                  pre = 'F'
+              elif tag == 'EXIF ISOSpeedRatings':
+                  pre = 'ISO'
+              elif tag == 'EXIF ShutterSpeedValue':
+                  pre = 'SS'
+              tag_text += pre + str(tags[tag]) + ' '
         is_video = False
         if 'index_yml' in locals() and name in index_yml:
             desc = index_yml[name]['desc']
@@ -108,6 +121,8 @@ for d in y:
                 continue # cannot found thumtail.
             video = f'{base_url}/{url}/{video}'
             img_url, video = video, img_url
+        if desc == ' - · - ' and tag_text != '':
+            desc = tag_text
         p = f'''
 - name: {name} 
   video: {video}
