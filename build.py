@@ -126,8 +126,10 @@ for d in y:
         p = f'''
 - name: {name} 
   video: {video}
+  share: {url}/{i}
   thum: {img_thumbnail_url}
   url: {img_url}
+  exif: "{tag_text}"
   desc: "{desc}"
 '''
         photos += p

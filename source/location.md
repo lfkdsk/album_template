@@ -1,4 +1,4 @@
 ---
 layout: location
-title: 照片集
+title: Map-照片集
 ---
