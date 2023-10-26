@@ -52,6 +52,47 @@ shutil.copyfile('./gallery/README.yml', './source/_data/album.yml')
 pathlib.Path(f"./{thumbnail_public}/").mkdir(parents=True, exist_ok=True)
 
 index = 0
+all_files = {}
+all_locations = {}
+
+# barrowed from 
+# https://gist.github.com/snakeye/fdc372dbf11370fe29eb 
+def _convert_to_degress(value):
+    """
+    Helper function to convert the GPS coordinates stored in the EXIF to degress in float format
+    :param value:
+    :type value: exifread.utils.Ratio
+    :rtype: float
+    """
+    d = float(value.values[0].num) / float(value.values[0].den)
+    m = float(value.values[1].num) / float(value.values[1].den)
+    s = float(value.values[2].num) / float(value.values[2].den)
+
+    return d + (m / 60.0) + (s / 3600.0)
+
+def read_gps(file_name: str):
+    if not os.path.exists(file_name):
+        return []
+    
+    with open(file_name, 'rb') as f:
+        exif_dict = exifread.process_file(f)
+        latitude = exif_dict.get('GPS GPSLatitude')
+        latitude_ref = exif_dict.get('GPS GPSLatitudeRef')
+        longitude = exif_dict.get('GPS GPSLongitude')
+        longitude_ref = exif_dict.get('GPS GPSLongitudeRef')
+        if latitude:
+            lat_value = _convert_to_degress(latitude)
+            if latitude_ref.values != 'N':
+                lat_value = -lat_value
+        else:
+            return []
+        if longitude:
+            lon_value = _convert_to_degress(longitude)
+            if longitude_ref.values != 'E':
+                lon_value = -lon_value
+        else:
+            return []
+        return [lat_value, lon_value]
 
 for d in y:
     title = d
@@ -123,6 +164,21 @@ for d in y:
             img_url, video = video, img_url
         if desc == ' - · - ' and tag_text != '':
             desc = tag_text
+        
+        # get gps location. 
+        loc = read_gps(f'./gallery/{url}/{i}')
+        all_files[f'{url}/{i}'] = {
+            'path': f'{url}/{i}',
+            'dir': url,
+            'exif': tag_text,
+            'location': loc,
+            'name': name,
+            'desc': desc,
+        }
+        # copy location only to speed up the location page.
+        if loc:
+            all_locations[f'{url}/{i}'] = all_files[f'{url}/{i}']
+
         p = f'''
 - name: {name} 
   video: {video}
@@ -153,68 +209,9 @@ photos:
     print(f'generate md file for source/gallery/vol{index}.md')
     index += 1
 
-input = "./gallery/"
 
-# barrowed from 
-# https://gist.github.com/snakeye/fdc372dbf11370fe29eb 
-def _convert_to_degress(value):
-    """
-    Helper function to convert the GPS coordinates stored in the EXIF to degress in float format
-    :param value:
-    :type value: exifread.utils.Ratio
-    :rtype: float
-    """
-    d = float(value.values[0].num) / float(value.values[0].den)
-    m = float(value.values[1].num) / float(value.values[1].den)
-    s = float(value.values[2].num) / float(value.values[2].den)
+with open("./source/_data/photos.yml", "w", encoding="utf-8") as f:
+    yaml.safe_dump(all_files, f, allow_unicode=True)
 
-    return d + (m / 60.0) + (s / 3600.0)
-
-def read_gps(file_name: str):
-    if not os.path.exists(file_name):
-        return (-1, -1)
-    
-    with open(file_name, 'rb') as f:
-        exif_dict = exifread.process_file(f)
-        latitude = exif_dict.get('GPS GPSLatitude')
-        latitude_ref = exif_dict.get('GPS GPSLatitudeRef')
-        longitude = exif_dict.get('GPS GPSLongitude')
-        longitude_ref = exif_dict.get('GPS GPSLongitudeRef')
-        if latitude:
-            lat_value = _convert_to_degress(latitude)
-            if latitude_ref.values != 'N':
-                lat_value = -lat_value
-        else:
-            return (-1, -1)
-        if longitude:
-            lon_value = _convert_to_degress(longitude)
-            if longitude_ref.values != 'E':
-                lon_value = -lon_value
-        else:
-            return (-1, -1)
-        return (lat_value, lon_value)
-
-def anlayze_location():
-    with open("./source/_data/gallery.yml", "w", encoding="utf-8") as f:
-        single = {}
-        for (dirpath, dirnames, filenames) in os.walk(input):
-            for dir in dirnames:
-                files = os.listdir(os.path.join(dirpath, dir))
-                for file in files:
-                    name, ext = os.path.splitext(file)
-                    if ext.lower() not in [".jpg", ".jpeg", ".webp"]:
-                        continue
-                    a, b = read_gps(os.path.join(dirpath, dir, file))
-                    if a == -1 and b == -1:
-                        continue;
-                    print(f'name {file} GPS: {a}, {b}')
-                    nK = os.path.join(dir, file)
-                    single[nK] = {
-                        "url": nK,
-                        "location": [a, b],
-                        "dir": dir,
-                        "name": name,
-                    }
-        yaml.safe_dump(single, f, allow_unicode=True)
-
-anlayze_location()
+with open("./source/_data/location.yml", "w", encoding="utf-8") as f:
+    yaml.safe_dump(all_locations, f, allow_unicode=True)

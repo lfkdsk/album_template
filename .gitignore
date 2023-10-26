@@ -15,3 +15,5 @@ source/_data/album.yml
 new_config.yml
 thumbnail_public/
 source/_data/gallery.yml
+source/_data/location.yml
+source/_data/photos.yml
