@@ -129,16 +129,23 @@ for d in y:
         exf = open(f'{gallery_dir}/{i}', 'rb')
         tags = exifread.process_file(exf)
         tag_text = ''
+        exif_data = {}
         for tag in tags.keys():
-            if tag in ['Image Make', 'Image Model', 'EXIF LensModel','EXIF FNumber', 'EXIF ISOSpeedRatings', 'EXIF ShutterSpeedValue',]:
-              pre = ''
+            if tag in ['Image Make', 'Image Model', 'EXIF LensModel','EXIF FNumber', 'EXIF ISOSpeedRatings', 'EXIF ExposureTime', 'EXIF DateTimeOriginal']:
+              pre = pro = ''
               if tag == 'EXIF FNumber':
                   pre = 'F'
               elif tag == 'EXIF ISOSpeedRatings':
-                  pre = 'ISO'
-              elif tag == 'EXIF ShutterSpeedValue':
-                  pre = 'SS'
-              tag_text += pre + str(tags[tag]) + ' '
+                  pre = 'ISO '
+              elif tag == 'EXIF ExposureTime':
+                  pro = 's'
+              elif tag == 'EXIF DateTimeOriginal':
+                  exif_data[tag] = str(tags[tag])
+                  continue
+              cur_text = pre + str(tags[tag]) + pro
+              exif_data[tag] = cur_text
+              tag_text += cur_text
+              tag_text += ' '
         is_video = False
         if 'index_yml' in locals() and name in index_yml:
             desc = index_yml[name]['desc']
@@ -174,6 +181,7 @@ for d in y:
             'location': loc,
             'name': name,
             'desc': desc,
+            'exif_data': exif_data
         }
         # copy location only to speed up the location page.
         if loc:
