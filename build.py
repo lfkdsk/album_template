@@ -132,17 +132,22 @@ for d in y:
         exif_data = {}
         for tag in tags.keys():
             if tag in ['Image Make', 'Image Model', 'EXIF LensModel','EXIF FNumber', 'EXIF ISOSpeedRatings', 'EXIF ExposureTime', 'EXIF DateTimeOriginal']:
-              pre = pro = ''
+              pre = pro = cur = ''
               if tag == 'EXIF FNumber':
                   pre = 'F'
+                  cur = str(eval(str(tags[tag])))
               elif tag == 'EXIF ISOSpeedRatings':
                   pre = 'ISO '
+                  cur = str(eval(str(tags[tag])))
               elif tag == 'EXIF ExposureTime':
                   pro = 's'
+                  cur = str(eval(str(tags[tag])))
               elif tag == 'EXIF DateTimeOriginal':
                   exif_data[tag] = str(tags[tag])
                   continue
-              cur_text = pre + str(tags[tag]) + pro
+              else:
+                  cur = str(tags[tag])
+              cur_text = pre + cur + pro
               exif_data[tag] = cur_text
               tag_text += cur_text
               tag_text += ' '
