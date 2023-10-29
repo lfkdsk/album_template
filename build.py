@@ -141,7 +141,7 @@ for d in y:
                   cur = str(eval(str(tags[tag])))
               elif tag == 'EXIF ExposureTime':
                   pro = 's'
-                  cur = str(eval(str(tags[tag])))
+                  cur = str(tags[tag])
               elif tag == 'EXIF DateTimeOriginal':
                   exif_data[tag] = str(tags[tag])
                   continue
