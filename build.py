@@ -131,6 +131,7 @@ for d in y:
         tag_text = ''
         exif_data = {}
         for tag in tags.keys():
+            # print(f"{tag} : {str(tags[tag])}")
             if tag in ['Image Make', 'Image Model', 'EXIF LensModel','EXIF FNumber', 'EXIF ISOSpeedRatings', 'EXIF ExposureTime', 'EXIF DateTimeOriginal']:
               pre = pro = cur = ''
               if tag == 'EXIF FNumber':
@@ -154,7 +155,7 @@ for d in y:
         is_video = False
         if 'index_yml' in locals() and name in index_yml:
             desc = index_yml[name]['desc']
-        if ext == '.md' or ext == '.yml' or name.startswith('__'):
+        if ext in ['.md', '.yml', '.DS_Store'] or name.startswith('__'):
             print(f"skip {name}{ext}")
             continue
         video = ""
