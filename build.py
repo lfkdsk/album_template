@@ -155,7 +155,7 @@ for d in y:
         is_video = False
         if 'index_yml' in locals() and name in index_yml:
             desc = index_yml[name]['desc']
-        if ext in ['.md', '.yml', '.DS_Store'] or name.startswith('__'):
+        if ext in ['.md', '.yml',] or name in ['.DS_Store'] or name.startswith('__'):
             print(f"skip {name}{ext}")
             continue
         video = ""
