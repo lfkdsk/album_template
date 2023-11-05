@@ -106,6 +106,7 @@ for d in y:
     style = element.get('style', 'default')
     index_md = f"./gallery/{url}/index.md"
     gallery_dir = f"./gallery/{url}"
+    rss_text = ''
     text = ''
 
     if os.path.exists(f"./gallery/{url}/index.md"):
@@ -202,6 +203,7 @@ for d in y:
   exif: "{tag_text}"
   desc: "{desc}"
 '''
+        rss_text += f'- <img src="{img_thumbnail_url}" />\n'
         photos += p
     tmp = f'''
 ---
@@ -214,6 +216,8 @@ url: {url}
 style: {style}
 location: {location}
 subtitle: {subtitle}
+rss: 
+{rss_text}
 photos:
 {photos}
 ---
