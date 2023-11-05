@@ -203,7 +203,7 @@ for d in y:
   exif: "{tag_text}"
   desc: "{desc}"
 '''
-        rss_text += f'- <img src="{img_thumbnail_url}" />\n'
+        rss_text += f'- <img src="{img_thumbnail_url}">\n'
         photos += p
     tmp = f'''
 ---
