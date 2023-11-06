@@ -2,8 +2,6 @@
 
 ## ToDo
 
-- 增加 location 展示
-
 ## Feature Update
 
 - CI 本身的图片增加并不会拖慢 CI 速度
@@ -17,3 +15,9 @@ name:
     desc: ‘xxxx‘
 ```
 
+- 增加 location 展示
+- random 界面实现
+- photo 界面实现
+- 相机边框配置
+- Gallery Daily 配置 https://github.com/lfkdsk/gallery-daily/
+- rss 已经可以正常使用
