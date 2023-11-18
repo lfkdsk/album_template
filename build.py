@@ -176,8 +176,6 @@ for d in y:
                 continue # cannot found thumtail.
             video = f'{base_url}/{url}/{video}'
             img_url, video = video, img_url
-        if desc == ' - · - ' and tag_text != '':
-            desc = tag_text
         
         # get gps location. 
         loc = read_gps(f'./gallery/{url}/{i}')
