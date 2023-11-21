@@ -21,3 +21,5 @@ name:
 - 相机边框配置
 - Gallery Daily 配置 https://github.com/lfkdsk/gallery-daily/
 - rss 已经可以正常使用
+- Support and reuse fujifilm style in album page 
+- Reset iconpark link.
