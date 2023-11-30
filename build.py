@@ -55,8 +55,10 @@ pathlib.Path(f"./{thumbnail_public}/").mkdir(parents=True, exist_ok=True)
 pathlib.Path(f"./{public}/").mkdir(parents=True, exist_ok=True)
 
 index = 0
+# anlaysis summary 
 all_files = {}
 all_locations = {}
+all_makers = {}
 
 # barrowed from 
 # https://gist.github.com/snakeye/fdc372dbf11370fe29eb 
@@ -150,6 +152,10 @@ for d in y:
               elif tag == 'EXIF DateTimeOriginal':
                   exif_data[tag] = str(tags[tag])
                   continue
+              elif tag == 'Image Make':
+                  mk = str(tags[tag])
+                  all_makers[mk] = 1 if mk not in all_makers else all_makers[mk] + 1
+                  cur = str(tags[tag])
               else:
                   cur = str(tags[tag])
               cur_text = pre + cur + pro
@@ -157,6 +163,8 @@ for d in y:
               tag_text += cur_text
               tag_text += ' '
         is_video = False
+        if not len(exif_data):
+            all_makers['none'] = 1 if 'none' not in all_makers else all_makers['none'] + 1
         if 'index_yml' in locals() and name in index_yml:
             desc = index_yml[name]['desc']
         if ext in ['.md', '.yml',] or name in ['.DS_Store'] or name.startswith('__'):
@@ -237,3 +245,5 @@ with open("./source/_data/photos.yml", "w", encoding="utf-8") as f:
 
 with open("./source/_data/location.yml", "w", encoding="utf-8") as f:
     yaml.safe_dump(all_locations, f, allow_unicode=True)
+
+print(all_makers)
