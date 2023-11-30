@@ -17,3 +17,5 @@ thumbnail_public/
 source/_data/gallery.yml
 source/_data/location.yml
 source/_data/photos.yml
+*.db
+__pycache__/

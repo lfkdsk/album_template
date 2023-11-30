@@ -1,19 +1,22 @@
 import yaml
 import os
 import json
-import exifread
 import pathlib
 import shutil
-from PIL import Image, ImageOps
+import exifread
 from natsort import natsorted
+from database import *
+from tool import *
+import analysis
 
 gen_thumbnail = False
 
-def thumbnail_image(input_file, output_file, max_size=(1000, 1000), resample=3, ext='webp'):
-    im = Image.open(input_file)
-    im.thumbnail(max_size, resample=resample)
-    im = ImageOps.exif_transpose(im)
-    im.save(output_file, format=ext, optimize=True)
+# init database
+if os.path.exists('sqlite.db'):
+    os.remove('sqlite.db')
+
+db.connect()
+db.create_tables([Album, Location, EXIFData, Photo])
 
 # check paths.
 if not os.path.exists("./gallery/"):
@@ -58,46 +61,6 @@ index = 0
 # anlaysis summary 
 all_files = {}
 all_locations = {}
-all_makers = {}
-
-# barrowed from 
-# https://gist.github.com/snakeye/fdc372dbf11370fe29eb 
-def _convert_to_degress(value):
-    """
-    Helper function to convert the GPS coordinates stored in the EXIF to degress in float format
-    :param value:
-    :type value: exifread.utils.Ratio
-    :rtype: float
-    """
-    d = float(value.values[0].num) / float(value.values[0].den)
-    m = float(value.values[1].num) / float(value.values[1].den)
-    s = float(value.values[2].num) / float(value.values[2].den)
-
-    return d + (m / 60.0) + (s / 3600.0)
-
-def read_gps(file_name: str):
-    if not os.path.exists(file_name):
-        return []
-    
-    with open(file_name, 'rb') as f:
-        exif_dict = exifread.process_file(f)
-        latitude = exif_dict.get('GPS GPSLatitude')
-        latitude_ref = exif_dict.get('GPS GPSLatitudeRef')
-        longitude = exif_dict.get('GPS GPSLongitude')
-        longitude_ref = exif_dict.get('GPS GPSLongitudeRef')
-        if latitude:
-            lat_value = _convert_to_degress(latitude)
-            if latitude_ref.values != 'N':
-                lat_value = -lat_value
-        else:
-            return []
-        if longitude:
-            lon_value = _convert_to_degress(longitude)
-            if longitude_ref.values != 'E':
-                lon_value = -lon_value
-        else:
-            return []
-        return [lat_value, lon_value]
 
 for d in y:
     title = d
@@ -129,6 +92,8 @@ for d in y:
     cover, _ = os.path.splitext(cover)
     cover = f'{thumbnail_url}/{cover}.webp'
 
+    album_model = Album.create(dir=url)
+
     for i in sorted_files:
         name, ext = os.path.splitext(i)
         desc = ' - · - '
@@ -153,8 +118,6 @@ for d in y:
                   exif_data[tag] = str(tags[tag])
                   continue
               elif tag == 'Image Make':
-                  mk = str(tags[tag])
-                  all_makers[mk] = 1 if mk not in all_makers else all_makers[mk] + 1
                   cur = str(tags[tag])
               else:
                   cur = str(tags[tag])
@@ -163,8 +126,9 @@ for d in y:
               tag_text += cur_text
               tag_text += ' '
         is_video = False
-        if not len(exif_data):
-            all_makers['none'] = 1 if 'none' not in all_makers else all_makers['none'] + 1
+        exif_model = to_exif_date(exif_data)
+        if exif_model:
+            exif_model.save()
         if 'index_yml' in locals() and name in index_yml:
             desc = index_yml[name]['desc']
         if ext in ['.md', '.yml',] or name in ['.DS_Store'] or name.startswith('__'):
@@ -190,7 +154,7 @@ for d in y:
         
         # get gps location. 
         loc = read_gps(f'./gallery/{url}/{i}')
-        all_files[f'{url}/{i}'] = {
+        result = {
             'path': f'{url}/{i}',
             'dir': url,
             'exif': tag_text,
@@ -199,6 +163,17 @@ for d in y:
             'desc': desc,
             'exif_data': exif_data
         }
+        all_files[f'{url}/{i}'] = result
+        loc_model = to_location(loc)
+        photo_model = Photo.create(
+            path= f'{url}/{i}',
+            dir=album_model,
+            exif=tag_text,
+            name=name,
+            desc=desc,
+            location=loc_model,
+            exif_data=exif_model,
+        )
         # copy location only to speed up the location page.
         if loc:
             all_locations[f'{url}/{i}'] = all_files[f'{url}/{i}']
@@ -238,7 +213,7 @@ photos:
 
 with open(f"./{public}/photos.json", 'w', encoding="utf-8") as f:
     print(f'generate photos.json with {len(all_files)} items.')
-    json.dump(all_files, f, ensure_ascii=False, indent=2)
+    json.dump(all_files, f, ensure_ascii=False)
 
 with open("./source/_data/photos.yml", "w", encoding="utf-8") as f:
     yaml.safe_dump(all_files, f, allow_unicode=True)
@@ -246,4 +221,8 @@ with open("./source/_data/photos.yml", "w", encoding="utf-8") as f:
 with open("./source/_data/location.yml", "w", encoding="utf-8") as f:
     yaml.safe_dump(all_locations, f, allow_unicode=True)
 
-print(all_makers)
+analysis.analyze_data()
+
+db.close()
+
+shutil.copyfile('sqlite.db', './public/sqlite.db')
