@@ -1,5 +1,6 @@
 import yaml
 import os
+import json
 import exifread
 import pathlib
 import shutil
@@ -37,6 +38,7 @@ thumbnail_url = config["thumbnail_url"]
 base_url = config["base_url"]
 thumbnail_size = config.get("thumbnail_size", 1000)
 thumbnail_public = "thumbnail_public"
+public = "public"
 if not base_url or not base_url:
     raise "need set base url in github CONFIG.yml ."
 
@@ -50,6 +52,7 @@ if not y:
 shutil.copyfile('./gallery/README.yml', './source/_data/album.yml')
 
 pathlib.Path(f"./{thumbnail_public}/").mkdir(parents=True, exist_ok=True)
+pathlib.Path(f"./{public}/").mkdir(parents=True, exist_ok=True)
 
 index = 0
 all_files = {}
@@ -225,6 +228,9 @@ photos:
     print(f'generate md file for source/gallery/vol{index}.md')
     index += 1
 
+with open(f"./{public}/photos.json", 'w', encoding="utf-8") as f:
+    print(f'generate photos.json with {len(all_files)} items.')
+    json.dump(all_files, f, ensure_ascii=False, indent=2)
 
 with open("./source/_data/photos.yml", "w", encoding="utf-8") as f:
     yaml.safe_dump(all_files, f, allow_unicode=True)
