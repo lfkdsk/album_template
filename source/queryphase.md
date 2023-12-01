@@ -56,3 +56,13 @@ WHERE row_num <= 10;
 ```
 
 [TRY IT](query?sql="SELECT%20id,%20path,%20name,%20desc,%20f_number,%20lo,%20hi%20FROM%20(%20SELECT%20p.id,%20p.path,%20p.name,%20p.desc,%20e.f_number,%20l.lo,%20l.hi,%20ROW_NUMBER()%20OVER%20(PARTITION%20BY%20e.f_number%20ORDER%20BY%20p.id)%20AS%20row_num%20FROM%20photo%20p%20JOIN%20exifdata%20e%20ON%20p.exif_data_id%20=%20e.id%20LEFT%20JOIN%20location%20l%20ON%20p.location_id%20=%20l.id%20)%20subquery%20WHERE%20row_num%20<=%2010;")
+
+## Group by country 
+
+```sql
+SELECT country, COUNT(*) as count 
+FROM location 
+GROUP BY country
+```
+
+[TRY IT](query?sql="SELECT%20country,%20COUNT(*)%20as%20count%20FROM%20location%20GROUP%20BY%20country")
