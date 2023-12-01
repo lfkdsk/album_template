@@ -101,9 +101,10 @@ for d in y:
         tags = exifread.process_file(exf)
         tag_text = ''
         exif_data = {}
+        pure_exif_data = {}
         for tag in tags.keys():
             # print(f"{tag} : {str(tags[tag])}")
-            if tag in ['Image Make', 'Image Model', 'EXIF LensModel','EXIF FNumber', 'EXIF ISOSpeedRatings', 'EXIF ExposureTime', 'EXIF DateTimeOriginal']:
+            if tag in ['Image Make', 'Image Model', 'EXIF LensModel', 'EXIF FocalLength','EXIF FNumber', 'EXIF ISOSpeedRatings', 'EXIF ExposureTime', 'EXIF DateTimeOriginal']:
               pre = pro = cur = ''
               if tag == 'EXIF FNumber':
                   pre = 'F'
@@ -115,18 +116,22 @@ for d in y:
                   pro = 's'
                   cur = str(tags[tag])
               elif tag == 'EXIF DateTimeOriginal':
-                  exif_data[tag] = str(tags[tag])
+                  exif_data[tag] = pure_exif_data[tag] = str(tags[tag])
                   continue
+              elif tag == 'EXIF FocalLength':
+                  cur = str(eval(str(tags[tag])))
+                  pro = 'mm'
               elif tag == 'Image Make':
                   cur = str(tags[tag])
               else:
                   cur = str(tags[tag])
               cur_text = pre + cur + pro
               exif_data[tag] = cur_text
+              pure_exif_data[tag] = cur
               tag_text += cur_text
               tag_text += ' '
         is_video = False
-        exif_model = to_exif_date(exif_data)
+        exif_model = to_exif_date(pure_exif_data)
         if exif_model:
             exif_model.save()
         if 'index_yml' in locals() and name in index_yml:

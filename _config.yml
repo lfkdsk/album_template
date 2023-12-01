@@ -221,7 +221,7 @@ markdown:
     breaks: true
     linkify: true
     typographer: true
-    quotes: '『』「」'
+    # quotes: '『』「」'
   enable_rules:
   disable_rules:
   plugins:
@@ -234,6 +234,7 @@ markdown:
     - markdown-it-sup #^上标^
     ## 外部安装插件
     - markdown-it-task-lists # - [ ] 
+    - markdown-it-link-attributes
     - markdown-it-imsize #![test](image.png =100x200) #![test](image.png =100x) #![test](image.png =x200)
   anchors:
     level: 1

@@ -24,6 +24,7 @@ class EXIFData(BaseModel):
     exposure_time = CharField()
     f_number = CharField()
     iso = CharField()
+    focal_length = CharField()
     date = DateTimeField(formats=['%Y:%m:%d %H:%M:%S'])
     lens_model = CharField()
 
@@ -56,6 +57,7 @@ def to_exif_date(data) -> EXIFData:
         exposure_time=data.get('EXIF ExposureTime', ''),
         f_number=data.get('EXIF FNumber', ''),
         iso=data.get('EXIF ISOSpeedRatings', ''),
+        focal_length=data.get('EXIF FocalLength', ''),
         date=datetime.strptime(data.get('EXIF DateTimeOriginal', ''), '%Y:%m:%d %H:%M:%S'),
         lens_model=data.get('EXIF LensModel', '')
     )
