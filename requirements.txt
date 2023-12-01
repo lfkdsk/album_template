@@ -3,3 +3,5 @@ natsort
 Pillow==10.0.1
 exifread
 peewee==3.17.0
+pyshp==2.3.1
+fiona==1.9.5

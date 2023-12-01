@@ -1,6 +1,8 @@
 from peewee import *
 from datetime import datetime
 import os
+from shapely.geometry import Point, shape
+import fiona  # 用于读取 Shapefile
 
 db = SqliteDatabase('sqlite.db')
 
@@ -16,7 +18,7 @@ class Album(BaseModel):
 class Location(BaseModel):
     lo = DoubleField()
     hi = DoubleField()
-
+    country = CharField()
 
 class EXIFData(BaseModel):
     maker = CharField()
@@ -62,7 +64,21 @@ def to_exif_date(data) -> EXIFData:
         lens_model=data.get('EXIF LensModel', '')
     )
 
+def get_country(lo, hi):
+    with fiona.open('ne_110m_admin_0_countries.shp') as records:
+        for record in records:
+            point = Point(lo, hi)
+            country_shape = shape(record['geometry'])
+            if country_shape.contains(point):
+                return record['properties']['NAME']
+    return ''
+
 def to_location(data) -> Location:
     if not data:
         return
-    return Location.create(lo=data[0], hi=data[1])
+    lo, hi = data[0], data[1]
+    return Location.create(
+        lo=lo, 
+        hi=hi, 
+        country=get_country(hi, lo),
+    )
