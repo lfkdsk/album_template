@@ -14,6 +14,8 @@ class BaseModel(Model):
 class Album(BaseModel):
     dir = CharField(unique=True)
 
+class Tag(BaseModel):
+    name = CharField(unique=True)
 
 class Location(BaseModel):
     lo = DoubleField()
@@ -40,6 +42,7 @@ class Photo(BaseModel):
     name = CharField()
     desc = CharField()
     exif_data = ForeignKeyField(EXIFData, backref='photo', null=True)
+    tag = ForeignKeyField(Tag, backref='photos', null=True)
 
 # "exif_data": {
 #   "Image Make": "Apple",

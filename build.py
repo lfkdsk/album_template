@@ -7,7 +7,6 @@ import exifread
 from natsort import natsorted
 from database import *
 from tool import *
-import analysis
 
 gen_thumbnail = False
 
@@ -16,7 +15,7 @@ if os.path.exists('sqlite.db'):
     os.remove('sqlite.db')
 
 db.connect()
-db.create_tables([Album, Location, EXIFData, Photo])
+db.create_tables([Album, Tag, Location, EXIFData, Photo])
 
 # check paths.
 if not os.path.exists("./gallery/"):
@@ -226,8 +225,7 @@ with open("./source/_data/photos.yml", "w", encoding="utf-8") as f:
 with open("./source/_data/location.yml", "w", encoding="utf-8") as f:
     yaml.safe_dump(all_locations, f, allow_unicode=True)
 
-analysis.analyze_data()
-
 db.close()
 
 shutil.copyfile('sqlite.db', './public/sqlite.db')
+shutil.copyfile('sqlite.db', './thumbnail_public/sqlite.db')
