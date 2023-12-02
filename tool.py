@@ -65,7 +65,7 @@ def read_gps(file_name: str):
 def to_exif_date(data) -> EXIFData:
     if not data:
         return
-    return EXIFData.create(
+    exif, _ = EXIFData.get_or_create(
         maker=data.get('Image Make'),
         model=data.get('Image Model'),
         exposure_time=data.get('EXIF ExposureTime', ''),
@@ -75,6 +75,7 @@ def to_exif_date(data) -> EXIFData:
         date=datetime.strptime(data.get('EXIF DateTimeOriginal', ''), '%Y:%m:%d %H:%M:%S'),
         lens_model=data.get('EXIF LensModel', '')
     )
+    return exif
 
 def get_country(lo, hi):
     with fiona.open('ne_110m_admin_0_countries.shp') as records:
@@ -85,12 +86,14 @@ def get_country(lo, hi):
                 return record['properties']['NAME']
     return ''
 
-def to_location(data) -> Location:
+def to_location(photo_model, data) -> Location:
     if not data:
         return
+    if photo_model:
+        return photo_model.location
     lo, hi = data[0], data[1]
-    return Location.create(
+    return Location.get_or_create(
         lo=lo, 
         hi=hi, 
-        country=get_country(hi, lo),
+        country=get_country(hi, lo)
     )

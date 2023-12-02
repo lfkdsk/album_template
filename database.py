@@ -16,7 +16,7 @@ class Tag(BaseModel):
 class Location(BaseModel):
     lo = DoubleField()
     hi = DoubleField()
-    country = CharField()
+    country = CharField(null=True)
 
 class EXIFData(BaseModel):
     maker = CharField()

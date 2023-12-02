@@ -9,10 +9,17 @@ from database import *
 from tool import *
 
 gen_thumbnail = False
+thumbnail_public = "thumbnail_public"
+public = "public"
+pathlib.Path(f"./{thumbnail_public}/").mkdir(parents=True, exist_ok=True)
+pathlib.Path(f"./{public}/").mkdir(parents=True, exist_ok=True)
 
 # init database
 if os.path.exists('sqlite.db'):
     os.remove('sqlite.db')
+
+db_path = f"./{thumbnail_public}/sqlite.db"
+db.init(db_path)
 
 db.connect()
 db.create_tables([Album, Tag, Location, EXIFData, Photo])
@@ -39,8 +46,6 @@ with open("./gallery/CONFIG.yml", 'r', encoding="utf-8") as g, open("./_config.y
 thumbnail_url = config["thumbnail_url"]
 base_url = config["base_url"]
 thumbnail_size = config.get("thumbnail_size", 1000)
-thumbnail_public = "thumbnail_public"
-public = "public"
 if not base_url or not base_url:
     raise "need set base url in github CONFIG.yml ."
 
@@ -52,9 +57,6 @@ if not y:
 
 # overwrite _config theme.
 shutil.copyfile('./gallery/README.yml', './source/_data/album.yml')
-
-pathlib.Path(f"./{thumbnail_public}/").mkdir(parents=True, exist_ok=True)
-pathlib.Path(f"./{public}/").mkdir(parents=True, exist_ok=True)
 
 index = 0
 # anlaysis summary 
@@ -91,7 +93,7 @@ for d in y:
     cover, _ = os.path.splitext(cover)
     cover = f'{thumbnail_url}/{cover}.webp'
 
-    album_model = Album.create(dir=url)
+    album_model, _ = Album.get_or_create(dir=url)
 
     for i in sorted_files:
         name, ext = os.path.splitext(i)
@@ -167,20 +169,23 @@ for d in y:
             'desc': desc,
             'exif_data': exif_data
         }
-        all_files[f'{url}/{i}'] = result
-        loc_model = to_location(loc)
-        photo_model = Photo.create(
-            path= f'{url}/{i}',
-            dir=album_model,
-            exif=tag_text,
-            name=name,
-            desc=desc,
-            location=loc_model,
-            exif_data=exif_model,
-        )
+        img_key = '{url}/{i}'
+        all_files[img_key] = result
+        photo_model = Photo.get_or_none(path=img_key)
+        loc_model = to_location(photo_model, loc)
+        if not photo_model:
+            photo_model = Photo.create(
+                path= img_key,
+                dir=album_model,
+                exif=tag_text,
+                name=name,
+                desc=desc,
+                location=loc_model,
+                exif_data=exif_model,
+            )
         # copy location only to speed up the location page.
         if loc:
-            all_locations[f'{url}/{i}'] = all_files[f'{url}/{i}']
+            all_locations[img_key] = all_files[img_key]
 
         p = f'''
 - name: {name} 
@@ -227,6 +232,5 @@ with open("./source/_data/location.yml", "w", encoding="utf-8") as f:
 
 db.close()
 
-shutil.copyfile('sqlite.db', './public/sqlite.db')
-shutil.copyfile('sqlite.db', './thumbnail_public/sqlite.db')
-shutil.copyfile('./gallery/README.yml', './thumbnail_public/README.yml')
+shutil.copyfile(f'./{thumbnail_public}/sqlite.db', f'./{public}/sqlite.db')
+shutil.copyfile('./gallery/README.yml', f'./{thumbnail_public}/README.yml')
