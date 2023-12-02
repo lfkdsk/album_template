@@ -18,9 +18,6 @@ pathlib.Path(f"./{public}/").mkdir(parents=True, exist_ok=True)
 if os.path.exists('sqlite.db'):
     os.remove('sqlite.db')
 
-db_path = f"./{thumbnail_public}/sqlite.db"
-db.init(db_path)
-
 db.connect()
 db.create_tables([Album, Tag, Location, EXIFData, Photo])
 
@@ -232,5 +229,5 @@ with open("./source/_data/location.yml", "w", encoding="utf-8") as f:
 
 db.close()
 
-shutil.copyfile(f'./{thumbnail_public}/sqlite.db', f'./{public}/sqlite.db')
+shutil.copyfile(f'./sqlite.db', f'./{public}/sqlite.db')
 shutil.copyfile('./gallery/README.yml', f'./{thumbnail_public}/README.yml')

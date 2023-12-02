@@ -8,7 +8,7 @@ from tensorflow.keras.applications import MobileNetV2
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input, decode_predictions
 from tensorflow.keras.preprocessing import image
 
-db_path = "./thumbnail_public/sqlite.db"
+db_path = "./public/sqlite.db"
 
 if not os.path.exists(db_path):
     raise "could not found sqlite.db."
