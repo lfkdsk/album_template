@@ -229,3 +229,4 @@ db.close()
 
 shutil.copyfile('sqlite.db', './public/sqlite.db')
 shutil.copyfile('sqlite.db', './thumbnail_public/sqlite.db')
+shutil.copyfile('README.yml', './thumbnail_public/README.yml')
