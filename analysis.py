@@ -2,6 +2,7 @@ from database import *
 import numpy as np
 import yaml
 import os
+import shutil
 import tensorflow as tf
 from natsort import natsorted
 from tensorflow.keras.applications import MobileNetV2
@@ -32,15 +33,15 @@ for d in y:
     sorted_files = natsorted(os.listdir(gallery_dir))
     for img_name in sorted_files:
         img_path = f'{gallery_dir}/{img_name}'
+        pathkey = f'{url}/{img_name}'
+        pic = Photo.get_or_none(path=pathkey)
+        if not pic or pic.tag is not None:
+            continue
         img = image.load_img(img_path, target_size=(224, 224))
         x = image.img_to_array(img)
         x = np.expand_dims(x, axis=0)
         x = preprocess_input(x)
         preds = model.predict(x)
-        pathkey = f'{url}/{img_name}'
-        pic = Photo.get_or_none(path=pathkey)
-        if not pic or pic.tag is not None:
-            continue
         result = decode_predictions(preds, top=1)[0]
         if not result:
             continue
@@ -51,3 +52,5 @@ for d in y:
         pic.save()
 
 db.close()
+
+shutil.copyfile('./public/sqlite.db', f'./thumbnail_public/sqlite.db')

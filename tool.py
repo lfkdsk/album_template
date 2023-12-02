@@ -92,7 +92,7 @@ def to_location(photo_model, data) -> Location:
     if photo_model:
         return photo_model.location
     lo, hi = data[0], data[1]
-    return Location.get_or_create(
+    return Location.create(
         lo=lo, 
         hi=hi, 
         country=get_country(hi, lo)

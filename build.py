@@ -18,7 +18,7 @@ pathlib.Path(f"./{public}/").mkdir(parents=True, exist_ok=True)
 if os.path.exists('sqlite.db'):
     os.remove('sqlite.db')
 
-db_path = "./public/sqlite.db"
+db_path = "./thumbnail_public/sqlite.db"
 
 db.init(db_path)
 db.connect()
@@ -169,13 +169,13 @@ for d in y:
             'desc': desc,
             'exif_data': exif_data
         }
-        img_key = '{url}/{i}'
+        img_key = f'{url}/{i}'
         all_files[img_key] = result
         photo_model = Photo.get_or_none(path=img_key)
         loc_model = to_location(photo_model, loc)
         if not photo_model:
             photo_model = Photo.create(
-                path= img_key,
+                path=img_key,
                 dir=album_model,
                 exif=tag_text,
                 name=name,
@@ -233,3 +233,4 @@ with open("./source/_data/location.yml", "w", encoding="utf-8") as f:
 db.close()
 
 shutil.copyfile('./gallery/README.yml', f'./{thumbnail_public}/README.yml')
+shutil.copyfile('./thumbnail_public/sqlite.db', f'./public/sqlite.db')
