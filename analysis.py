@@ -19,7 +19,7 @@ db.connect(reuse_if_open=True)
 
 model = MobileNetV2(weights='imagenet')
 
-with open("./gallery/README.yml", 'r') as f:
+with open("./thumbnail_public/README.yml", 'r') as f:
     y = yaml.safe_load(f)
 
 if not y:
