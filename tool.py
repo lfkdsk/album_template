@@ -2,6 +2,11 @@
 from PIL import Image, ImageOps
 import exifread
 import os
+from database import *
+from datetime import datetime
+import os
+from shapely.geometry import Point, shape
+import fiona  # 用于读取 Shapefile
 
 def thumbnail_image(input_file, output_file, max_size=(1000, 1000), resample=3, ext='webp'):
     im = Image.open(input_file)
@@ -47,3 +52,45 @@ def read_gps(file_name: str):
         else:
             return []
         return [lat_value, lon_value]
+
+# "exif_data": {
+#   "Image Make": "Apple",
+#   "Image Model": "iPhone 12 Pro",
+#   "EXIF ExposureTime": "1/99s",
+#   "EXIF FNumber": "F2",
+#   "EXIF ISOSpeedRatings": "ISO 32",
+#   "EXIF DateTimeOriginal": "2023:06:05 12:31:40",
+#   "EXIF LensModel": "iPhone 12 Pro back triple camera 6mm f/2"
+# }
+def to_exif_date(data) -> EXIFData:
+    if not data:
+        return
+    return EXIFData.create(
+        maker=data.get('Image Make'),
+        model=data.get('Image Model'),
+        exposure_time=data.get('EXIF ExposureTime', ''),
+        f_number=data.get('EXIF FNumber', ''),
+        iso=data.get('EXIF ISOSpeedRatings', ''),
+        focal_length=data.get('EXIF FocalLength', ''),
+        date=datetime.strptime(data.get('EXIF DateTimeOriginal', ''), '%Y:%m:%d %H:%M:%S'),
+        lens_model=data.get('EXIF LensModel', '')
+    )
+
+def get_country(lo, hi):
+    with fiona.open('ne_110m_admin_0_countries.shp') as records:
+        for record in records:
+            point = Point(lo, hi)
+            country_shape = shape(record['geometry'])
+            if country_shape.contains(point):
+                return record['properties']['NAME']
+    return ''
+
+def to_location(data) -> Location:
+    if not data:
+        return
+    lo, hi = data[0], data[1]
+    return Location.create(
+        lo=lo, 
+        hi=hi, 
+        country=get_country(hi, lo),
+    )

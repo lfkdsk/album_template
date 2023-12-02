@@ -42,13 +42,11 @@ for d in y:
             continue
         pred_label = result[0][1]
         print('Predicted:', img_path, pred_label)
-        pic = Photo.get_or_none(name=img_path)
+        pic = Photo.get_or_none(path=img_path)
         if not pic:
             continue
         tag = Tag.get_or_create(name=pred_label)
         pic.tag = tag
         pic.save()
-
-
 
 db.close()

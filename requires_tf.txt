@@ -4,3 +4,4 @@ Pillow
 pyyaml
 natsort
 peewee
+shapely
