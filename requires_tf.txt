@@ -3,3 +3,4 @@ tensorflow
 Pillow
 pyyaml
 natsort
+peewee

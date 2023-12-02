@@ -49,4 +49,6 @@ for d in y:
         pic.tag = tag
         pic.save()
 
+
+
 db.close()
