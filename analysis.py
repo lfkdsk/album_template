@@ -37,15 +37,16 @@ for d in y:
         x = np.expand_dims(x, axis=0)
         x = preprocess_input(x)
         preds = model.predict(x)
+        pathkey = f'{url}/{img_name}'
+        pic = Photo.get_or_none(path=pathkey)
+        if not pic or pic.tag is not None:
+            continue
         result = decode_predictions(preds, top=1)[0]
         if not result:
             continue
         pred_label = result[0][1]
         print('Predicted:', img_path, pred_label)
-        pic = Photo.get_or_none(path=img_path)
-        if not pic:
-            continue
-        tag = Tag.get_or_create(name=pred_label)
+        tag, _ = Tag.get_or_create(name=pred_label)
         pic.tag = tag
         pic.save()
 
