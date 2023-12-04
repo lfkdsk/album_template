@@ -6,8 +6,9 @@ import shutil
 import tensorflow as tf
 from natsort import natsorted
 from tensorflow.keras.applications import MobileNetV2
-from tensorflow.keras.applications.mobilenet_v2 import preprocess_input, decode_predictions
+# from tensorflow.keras.applications.mobilenet_v2 import preprocess_input, decode_predictions
 from tensorflow.keras.preprocessing import image
+from keras.applications.densenet import DenseNet121, preprocess_input, decode_predictions
 
 db_path = "./public/sqlite.db"
 
@@ -18,9 +19,11 @@ db.init(db_path)
 
 db.connect(reuse_if_open=True)
 
-model = MobileNetV2(weights='imagenet')
+Tag.delete()
 
-with open("./thumbnail_public/README.yml", 'r') as f:
+model = DenseNet121(weights='imagenet')
+
+with open("./gallery/README.yml", 'r') as f:
     y = yaml.safe_load(f)
 
 if not y:
@@ -29,13 +32,13 @@ if not y:
 for d in y:
     element = y[d]
     url = element['url']
-    gallery_dir = f'thumbnail_public/{url}'
+    gallery_dir = f'gallery/{url}'
     sorted_files = natsorted(os.listdir(gallery_dir))
     for img_name in sorted_files:
         img_path = f'{gallery_dir}/{img_name}'
         pathkey = f'{url}/{img_name}'
         pic = Photo.get_or_none(path=pathkey)
-        if not pic or pic.tag is not None:
+        if not pic:
             continue
         img = image.load_img(img_path, target_size=(224, 224))
         x = image.img_to_array(img)
@@ -46,11 +49,12 @@ for d in y:
         if not result:
             continue
         pred_label = result[0][1]
-        print('Predicted:', img_path, pred_label)
+        pred_num = result[0][2]
+        if pred_num < 0.55:
+            continue
+        print('Predicted:', img_path, result[0])
         tag, _ = Tag.get_or_create(name=pred_label)
         pic.tag = tag
         pic.save()
 
 db.close()
-
-shutil.copyfile('./public/sqlite.db', f'./thumbnail_public/sqlite.db')

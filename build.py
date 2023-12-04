@@ -18,7 +18,7 @@ pathlib.Path(f"./{public}/").mkdir(parents=True, exist_ok=True)
 if os.path.exists('sqlite.db'):
     os.remove('sqlite.db')
 
-db_path = "./thumbnail_public/sqlite.db"
+db_path = "./public/sqlite.db"
 
 db.init(db_path)
 db.connect()
@@ -233,4 +233,3 @@ with open("./source/_data/location.yml", "w", encoding="utf-8") as f:
 db.close()
 
 shutil.copyfile('./gallery/README.yml', f'./{thumbnail_public}/README.yml')
-shutil.copyfile('./thumbnail_public/sqlite.db', f'./public/sqlite.db')
