@@ -69,6 +69,7 @@ for d in y:
     element = y[d]
     cover = element['cover']
     url = element['url']
+    hidden = element.get('hidden', False)
     date = element.get('date', '')
     subtitle = element.get('subtitle', '')
     location = element.get('location', [])
@@ -205,6 +206,7 @@ date: {date}
 cover: {cover}
 layout: album
 permalink: {url}
+hidden: {hidden}
 url: {url}
 style: {style}
 location: {location}
