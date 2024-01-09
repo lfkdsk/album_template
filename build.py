@@ -73,6 +73,7 @@ for d in y:
     date = element.get('date', '')
     subtitle = element.get('subtitle', '')
     location = element.get('location', [])
+    layout = element.get('layout', 'album')
     style = element.get('style', 'default')
     index_md = f"./gallery/{url}/index.md"
     gallery_dir = f"./gallery/{url}"
@@ -165,6 +166,8 @@ for d in y:
             'path': f'{url}/{i}',
             'dir': url,
             'exif': tag_text,
+            'url': img_url,
+            'thum': img_thumbnail_url,
             'location': loc,
             'name': name,
             'desc': desc,
@@ -204,7 +207,7 @@ for d in y:
 title: {title}
 date: {date}
 cover: {cover}
-layout: album
+layout: {layout}
 permalink: {url}
 hidden: {hidden}
 url: {url}
