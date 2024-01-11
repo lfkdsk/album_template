@@ -8,7 +8,7 @@ from natsort import natsorted
 from database import *
 from tool import *
 
-gen_thumbnail = True
+gen_thumbnail = False
 thumbnail_public = "thumbnail_public"
 public = "public"
 pathlib.Path(f"./{thumbnail_public}/").mkdir(parents=True, exist_ok=True)
