@@ -145,7 +145,7 @@ node_sass:
 search:
   path: search.xml
   field: post
-  content: true
+  content: false
 
 algolia:
   appId: "5KD46FHE8V"
@@ -169,42 +169,42 @@ algolia:
 #   order_by: -date
 #   template: ./source/atom.xml
 
-jsonContent:
-  meta: true
-  keywords: false # language name option
-  dateFormat: undefined # format string
-  pages:
-    title: true
-    slug: true
-    date: true
-    updated: true
-    comments: false
-    path: true
-    link: true
-    permalink: true
-    excerpt: true
-    keywords: true # but only if root keywords option language was set
-    text: true
-    raw: false
-    content: false
-    photos: true
-  posts:
-    title: true
-    slug: true
-    date: true
-    updated: true
-    comments: false
-    path: true
-    link: true
-    permalink: true
-    excerpt: true
-    keywords: true # but only if root keywords option language was set
-    text: true
-    raw: false
-    content: false
-    categories: true
-    tags: true
-    photos: true
+# jsonContent:
+#   meta: true
+#   keywords: false # language name option
+#   dateFormat: undefined # format string
+#   pages:
+#     title: true
+#     slug: true
+#     date: true
+#     updated: true
+#     comments: false
+#     path: true
+#     link: true
+#     permalink: true
+#     excerpt: true
+#     keywords: true # but only if root keywords option language was set
+#     text: true
+#     raw: false
+#     content: false
+#     photos: true
+#   posts:
+#     title: true
+#     slug: true
+#     date: true
+#     updated: true
+#     comments: false
+#     path: true
+#     link: true
+#     permalink: true
+#     excerpt: true
+#     keywords: true # but only if root keywords option language was set
+#     text: true
+#     raw: false
+#     content: false
+#     categories: true
+#     tags: true
+#     photos: true
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
