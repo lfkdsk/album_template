@@ -14,11 +14,11 @@ public = "public"
 pathlib.Path(f"./{thumbnail_public}/").mkdir(parents=True, exist_ok=True)
 pathlib.Path(f"./{public}/").mkdir(parents=True, exist_ok=True)
 
-# init database
-if os.path.exists('sqlite.db'):
-    os.remove('sqlite.db')
 
 db_path = "./public/sqlite.db"
+# init database
+if os.path.exists(db_path):
+    os.remove(db_path)
 
 db.init(db_path)
 db.connect()
