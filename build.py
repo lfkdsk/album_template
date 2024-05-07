@@ -12,15 +12,15 @@ from tool import *
 gen_thumbnail = False
 thumbnail_public = "thumbnail_public"
 public = "public"
-gallery = "gallery"
+gallery = "_gallery"
 pathlib.Path(f"./{thumbnail_public}/").mkdir(parents=True, exist_ok=True)
 pathlib.Path(f"./{public}/").mkdir(parents=True, exist_ok=True)
 
 
 db_path = "./public/sqlite.db"
 # init database
-if os.path.exists(db_path):
-    os.remove(db_path)
+# if os.path.exists(db_path):
+#     os.remove(db_path)
 
 db.init(db_path)
 db.connect()
@@ -113,6 +113,9 @@ for album_key in readme_yaml:
 
     for sorted_file in sorted_files:
         name, ext = os.path.splitext(sorted_file)
+        if ext in ['.md', '.yml',] or name in ['.DS_Store'] or name.startswith('__'):
+            print(f"skip {name}{ext}")
+            continue
         desc = ' - · - '
         exf = open(f'{gallery_dir}/{sorted_file}', 'rb')
         tags = exifread.process_file(exf)
@@ -158,9 +161,6 @@ for album_key in readme_yaml:
             exif_model.save()
         if 'index_yml' in locals() and name in index_yml:
             desc = index_yml[name]['desc']
-        if ext in ['.md', '.yml',] or name in ['.DS_Store'] or name.startswith('__'):
-            print(f"skip {name}{ext}")
-            continue
         video = ""
         img_url = f'{base_url}/{url}/{sorted_file}'
         img_thumbnail_url = f'{thumbnail_url}/{url}/{name}.webp'
@@ -221,6 +221,14 @@ for album_key in readme_yaml:
 '''
         rss_text += f'- <img src="{img_thumbnail_url}">\n'
         photos += p
+
+    dir_linked_photos = Photo.select().where(Photo.dir == album_model)
+    for item in dir_linked_photos:
+        if os.path.exists(f'./{gallery}/{item.path}'):
+           continue
+        print(f'delete {item.path} row instance.')
+        item.delete_instance() 
+
     tmp = f'''
 ---
 title: {title}
