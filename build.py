@@ -44,7 +44,9 @@ if not os.path.exists(f"./{gallery}/CONFIG.yml") or not os.path.exists(f'./{gall
 
 config = {}
 # re-generate config file.
-with open(f"./{gallery}/CONFIG.yml", 'r', encoding="utf-8") as gallery_config_file, open("./_config.yml", "r+", encoding="utf-8") as template_config_file, open("./new_config.yml", "w", encoding="utf-8") as new_config_file:
+with open(f"./{gallery}/CONFIG.yml", 'r', encoding="utf-8") as gallery_config_file, \
+     open("./_config.yml", "r+", encoding="utf-8") as template_config_file, \
+     open("./new_config.yml", "w", encoding="utf-8") as new_config_file: 
     gallery_config, template_config = yaml.safe_load(gallery_config_file), yaml.safe_load(template_config_file)
     if css_file_name:
         template_config['custom_css'] = css_file_name
@@ -135,7 +137,6 @@ for album_key in readme_yaml:
                   if len(resu) == 2 and resu[0] != '1':
                     a, b = eval(resu[0]), eval(resu[1])
                     cur = f'{a/b}' if a > b else f'1/{int(b/a)}'
-                    print(cur)
               elif tag == 'EXIF DateTimeOriginal':
                   exif_data[tag] = pure_exif_data[tag] = str(tags[tag])
                   continue
