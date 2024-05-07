@@ -6,7 +6,7 @@
     "version": "6.0.0"
   },
   "scripts": {
-    "generate": "hexo generate && hexo algolia",
+    "generate": "hexo generate --config new_config.yml && hexo algolia",
     "vercel": "bash vercel.sh",
     "clean": "hexo clean",
     "deploy": "hexo deploy",
@@ -14,7 +14,7 @@
     "dev": "bash dev.sh",
     "taildev": "npx tailwindcss -i ./themes/hexo-theme-type/source/css/input.css -o ./themes/hexo-theme-type/source/css/tailwind.css --watch",
     "tailbuild": "npx tailwindcss -i ./themes/hexo-theme-type/source/css/input.css -o ./themes/hexo-theme-type/source/css/tailwind.css",
-    "server": "hexo server"
+    "server": "hexo server --config new_config.yml"
   },
   "dependencies": {
     "hexo": "^6.0.0",

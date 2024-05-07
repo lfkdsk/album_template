@@ -4,6 +4,7 @@ import json
 import pathlib
 import shutil
 import exifread
+import hashlib
 from natsort import natsorted
 from database import *
 from tool import *
@@ -29,20 +30,30 @@ db.create_tables([Album, Tag, Location, EXIFData, Photo])
 if not os.path.exists(f"./{gallery}/"):
     raise "need git clone gallery first."
 
+# copy custom css
+css_file_name = ''
+if os.path.exists(f"./{gallery}/style.css"):
+    text = open(f'./{gallery}/style.css', 'r').read()
+    md5 = hashlib.md5(text.encode()).hexdigest()
+    css_file_name = f'custom/style.{md5}.css'
+    shutil.copyfile(f'./{gallery}/style.css', f'./source/{css_file_name}')
+
 # check config.
 if not os.path.exists(f"./{gallery}/CONFIG.yml") or not os.path.exists(f'./{gallery}/README.yml'):
     raise "CONFIG or README is null."
 
 config = {}
 # re-generate config file.
-with open(f"./{gallery}/CONFIG.yml", 'r', encoding="utf-8") as g, open("./_config.yml", "r+", encoding="utf-8") as c, open("./new_config.yml", "w", encoding="utf-8") as n:
-    g_file, c_file = yaml.safe_load(g), yaml.safe_load(c)
-    for item in g_file:
+with open(f"./{gallery}/CONFIG.yml", 'r', encoding="utf-8") as gallery_config_file, open("./_config.yml", "r+", encoding="utf-8") as template_config_file, open("./new_config.yml", "w", encoding="utf-8") as new_config_file:
+    gallery_config, template_config = yaml.safe_load(gallery_config_file), yaml.safe_load(template_config_file)
+    if css_file_name:
+        template_config['custom_css'] = css_file_name
+    for item in gallery_config:
         print(item)
-        c_file[str(item)] = g_file[item]
-        config[str(item)] = g_file[item]
-    print(list(c_file))        
-    yaml.safe_dump(c_file, n, allow_unicode=True)
+        template_config[str(item)] = gallery_config[item]
+        config[str(item)] = gallery_config[item]
+    print(list(template_config))
+    yaml.safe_dump(template_config, new_config_file, allow_unicode=True)
 
 thumbnail_url = config["thumbnail_url"]
 base_url = config["base_url"]
@@ -50,24 +61,24 @@ thumbnail_size = config.get("thumbnail_size", 1000)
 if not base_url or not base_url:
     raise "need set base url in github CONFIG.yml ."
 
-with open(f"./{gallery}/README.yml", 'r') as f:
-    y = yaml.safe_load(f)
+with open(f"./{gallery}/README.yml", 'r') as index_file:
+    readme_yaml = yaml.safe_load(index_file)
 
-if not y:
+if not readme_yaml:
     raise "could not found README.yml"
 
 # overwrite _config theme.
 shutil.copyfile(f'./{gallery}/README.yml', './source/_data/album.yml')
 
 index = 0
-# anlaysis summary 
+# anlaysis summary
 all_files = {}
 all_locations = {}
 
-for d in y:
-    title = d
+for album_key in readme_yaml:
+    title = album_key
     print(title)
-    element = y[d]
+    element = readme_yaml[album_key]
     cover = element['cover']
     url = element['url']
     hidden = element.get('hidden', False)
@@ -82,14 +93,14 @@ for d in y:
     text = ''
 
     if os.path.exists(f"./{gallery}/{url}/index.md"):
-        f = open(index_md, 'r')
-        for l in f.readlines():
-            text += l
+        index_file = open(index_md, 'r')
+        for index_line in index_file.readlines():
+            text += index_line
     photos = ''
     index_yml_name = f"./{gallery}/{url}/index.yml"
     if os.path.exists(index_yml_name):
-        with open(index_yml_name, 'r', encoding="utf-8") as i:
-            index_yml = yaml.safe_load(i)
+        with open(index_yml_name, 'r', encoding="utf-8") as sorted_file:
+            index_yml = yaml.safe_load(sorted_file)
 
     sorted_files = natsorted(os.listdir(gallery_dir))
     pathlib.Path(f"./{thumbnail_public}/{url}/").mkdir(parents=True, exist_ok=True)
@@ -98,10 +109,10 @@ for d in y:
 
     album_model, _ = Album.get_or_create(dir=url)
 
-    for i in sorted_files:
-        name, ext = os.path.splitext(i)
+    for sorted_file in sorted_files:
+        name, ext = os.path.splitext(sorted_file)
         desc = ' - · - '
-        exf = open(f'{gallery_dir}/{i}', 'rb')
+        exf = open(f'{gallery_dir}/{sorted_file}', 'rb')
         tags = exifread.process_file(exf)
         tag_text = ''
         exif_data = {}
@@ -120,7 +131,7 @@ for d in y:
                   pro = 's'
                   cur = str(tags[tag])
                   resu = cur.split('/')
-                  # calc for iPhone with expo time like: 
+                  # calc for iPhone with expo time like:
                   if len(resu) == 2 and resu[0] != '1':
                     a, b = eval(resu[0]), eval(resu[1])
                     cur = f'{a/b}' if a > b else f'1/{int(b/a)}'
@@ -150,12 +161,12 @@ for d in y:
             print(f"skip {name}{ext}")
             continue
         video = ""
-        img_url = f'{base_url}/{url}/{i}'
+        img_url = f'{base_url}/{url}/{sorted_file}'
         img_thumbnail_url = f'{thumbnail_url}/{url}/{name}.webp'
         thumbnail_name =f'./{thumbnail_public}/{url}/{name}.webp'
         # compress image
         if gen_thumbnail or not os.path.exists(thumbnail_name):
-            thumbnail_image(f'{gallery_dir}/{i}', output_file=thumbnail_name, max_size=(thumbnail_size, thumbnail_size))
+            thumbnail_image(f'{gallery_dir}/{sorted_file}', output_file=thumbnail_name, max_size=(thumbnail_size, thumbnail_size))
         if ext[1:].lower() in ["mov", "mp4"]:
             is_video = True
             for thum_name, file in [(os.path.splitext(n)[0], n) for n in sorted_files]:
@@ -166,11 +177,11 @@ for d in y:
                 continue # cannot found thumtail.
             video = f'{base_url}/{url}/{video}'
             img_url, video = video, img_url
-        
-        # get gps location. 
-        loc = read_gps(f'./{gallery}/{url}/{i}')
+
+        # get gps location.
+        loc = read_gps(f'./{gallery}/{url}/{sorted_file}')
         result = {
-            'path': f'{url}/{i}',
+            'path': f'{url}/{sorted_file}',
             'dir': url,
             'exif': tag_text,
             'url': img_url,
@@ -180,7 +191,7 @@ for d in y:
             'desc': desc,
             'exif_data': exif_data
         }
-        img_key = f'{url}/{i}'
+        img_key = f'{url}/{sorted_file}'
         all_files[img_key] = result
         photo_model = Photo.get_or_none(path=img_key)
         loc_model = to_location(photo_model, loc)
@@ -199,9 +210,9 @@ for d in y:
             all_locations[img_key] = all_files[img_key]
 
         p = f'''
-- name: {name} 
+- name: {name}
   video: {video}
-  share: {url}/{i}
+  share: {url}/{sorted_file}
   thum: {img_thumbnail_url}
   url: {img_url}
   exif: "{tag_text}"
@@ -221,7 +232,7 @@ url: {url}
 style: {style}
 location: {location}
 subtitle: {subtitle}
-rss: 
+rss:
 {rss_text}
 photos:
 {photos}
@@ -232,15 +243,15 @@ photos:
     print(f'generate md file for source/gallery/vol{index}.md')
     index += 1
 
-with open(f"./{public}/photos.json", 'w', encoding="utf-8") as f:
+with open(f"./{public}/photos.json", 'w', encoding="utf-8") as index_file:
     print(f'generate photos.json with {len(all_files)} items.')
-    json.dump(all_files, f, ensure_ascii=False)
+    json.dump(all_files, index_file, ensure_ascii=False)
 
-with open("./source/_data/photos.yml", "w", encoding="utf-8") as f:
-    yaml.safe_dump(all_files, f, allow_unicode=True)
+with open("./source/_data/photos.yml", "w", encoding="utf-8") as index_file:
+    yaml.safe_dump(all_files, index_file, allow_unicode=True)
 
-with open("./source/_data/location.yml", "w", encoding="utf-8") as f:
-    yaml.safe_dump(all_locations, f, allow_unicode=True)
+with open("./source/_data/location.yml", "w", encoding="utf-8") as index_file:
+    yaml.safe_dump(all_locations, index_file, allow_unicode=True)
 
 db.close()
 
