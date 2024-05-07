@@ -11,7 +11,7 @@ from tool import *
 gen_thumbnail = False
 thumbnail_public = "thumbnail_public"
 public = "public"
-gallery = "gallery"
+gallery = "_gallery"
 pathlib.Path(f"./{thumbnail_public}/").mkdir(parents=True, exist_ok=True)
 pathlib.Path(f"./{public}/").mkdir(parents=True, exist_ok=True)
 
@@ -112,13 +112,19 @@ for d in y:
               pre = pro = cur = ''
               if tag == 'EXIF FNumber':
                   pre = 'F'
-                  cur = str(eval(str(tags[tag])))
+                  cur = str(round(eval(str(tags[tag])), 1))
               elif tag == 'EXIF ISOSpeedRatings':
                   pre = 'ISO '
                   cur = str(eval(str(tags[tag])))
               elif tag == 'EXIF ExposureTime':
                   pro = 's'
                   cur = str(tags[tag])
+                  resu = cur.split('/')
+                  # calc for iPhone with expo time like: 
+                  if len(resu) == 2 and resu[0] != '1':
+                    a, b = eval(resu[0]), eval(resu[1])
+                    cur = f'{a/b}' if a > b else f'1/{int(b/a)}'
+                    print(cur)
               elif tag == 'EXIF DateTimeOriginal':
                   exif_data[tag] = pure_exif_data[tag] = str(tags[tag])
                   continue
