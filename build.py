@@ -11,6 +11,7 @@ from tool import *
 gen_thumbnail = False
 thumbnail_public = "thumbnail_public"
 public = "public"
+gallery = "gallery"
 pathlib.Path(f"./{thumbnail_public}/").mkdir(parents=True, exist_ok=True)
 pathlib.Path(f"./{public}/").mkdir(parents=True, exist_ok=True)
 
@@ -25,16 +26,16 @@ db.connect()
 db.create_tables([Album, Tag, Location, EXIFData, Photo])
 
 # check paths.
-if not os.path.exists("./gallery/"):
+if not os.path.exists(f"./{gallery}/"):
     raise "need git clone gallery first."
 
 # check config.
-if not os.path.exists("./gallery/CONFIG.yml") or not os.path.exists('./gallery/README.yml'):
+if not os.path.exists(f"./{gallery}/CONFIG.yml") or not os.path.exists(f'./{gallery}/README.yml'):
     raise "CONFIG or README is null."
 
 config = {}
 # re-generate config file.
-with open("./gallery/CONFIG.yml", 'r', encoding="utf-8") as g, open("./_config.yml", "r+", encoding="utf-8") as c, open("./new_config.yml", "w", encoding="utf-8") as n:
+with open(f"./{gallery}/CONFIG.yml", 'r', encoding="utf-8") as g, open("./_config.yml", "r+", encoding="utf-8") as c, open("./new_config.yml", "w", encoding="utf-8") as n:
     g_file, c_file = yaml.safe_load(g), yaml.safe_load(c)
     for item in g_file:
         print(item)
@@ -49,14 +50,14 @@ thumbnail_size = config.get("thumbnail_size", 1000)
 if not base_url or not base_url:
     raise "need set base url in github CONFIG.yml ."
 
-with open("./gallery/README.yml", 'r') as f:
+with open(f"./{gallery}/README.yml", 'r') as f:
     y = yaml.safe_load(f)
 
 if not y:
     raise "could not found README.yml"
 
 # overwrite _config theme.
-shutil.copyfile('./gallery/README.yml', './source/_data/album.yml')
+shutil.copyfile(f'./{gallery}/README.yml', './source/_data/album.yml')
 
 index = 0
 # anlaysis summary 
@@ -75,17 +76,17 @@ for d in y:
     location = element.get('location', [])
     layout = element.get('layout', 'album')
     style = element.get('style', 'default')
-    index_md = f"./gallery/{url}/index.md"
-    gallery_dir = f"./gallery/{url}"
+    index_md = f"./{gallery}/{url}/index.md"
+    gallery_dir = f"./{gallery}/{url}"
     rss_text = ''
     text = ''
 
-    if os.path.exists(f"./gallery/{url}/index.md"):
+    if os.path.exists(f"./{gallery}/{url}/index.md"):
         f = open(index_md, 'r')
         for l in f.readlines():
             text += l
     photos = ''
-    index_yml_name = f"./gallery/{url}/index.yml"
+    index_yml_name = f"./{gallery}/{url}/index.yml"
     if os.path.exists(index_yml_name):
         with open(index_yml_name, 'r', encoding="utf-8") as i:
             index_yml = yaml.safe_load(i)
@@ -161,7 +162,7 @@ for d in y:
             img_url, video = video, img_url
         
         # get gps location. 
-        loc = read_gps(f'./gallery/{url}/{i}')
+        loc = read_gps(f'./{gallery}/{url}/{i}')
         result = {
             'path': f'{url}/{i}',
             'dir': url,
@@ -237,4 +238,4 @@ with open("./source/_data/location.yml", "w", encoding="utf-8") as f:
 
 db.close()
 
-shutil.copyfile('./gallery/README.yml', f'./{thumbnail_public}/README.yml')
+shutil.copyfile(f'./{gallery}/README.yml', f'./{thumbnail_public}/README.yml')
