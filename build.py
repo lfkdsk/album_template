@@ -12,7 +12,7 @@ from tool import *
 gen_thumbnail = False
 thumbnail_public = "thumbnail_public"
 public = "public"
-gallery = "_gallery"
+gallery = "gallery"
 pathlib.Path(f"./{thumbnail_public}/").mkdir(parents=True, exist_ok=True)
 pathlib.Path(f"./{public}/").mkdir(parents=True, exist_ok=True)
 
