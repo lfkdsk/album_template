@@ -206,6 +206,14 @@ for album_key in readme_yaml:
                 location=loc_model,
                 exif_data=exif_model,
             )
+        else:
+            photo_model.dir = album_model
+            photo_model.exif = tag_text
+            photo_model.name = name
+            photo_model.desc = desc
+            photo_model.location = loc_model,
+            photo_model.exif_data = exif_model
+            photo_model.save()
         # copy location only to speed up the location page.
         if loc:
             all_locations[img_key] = all_files[img_key]
