@@ -211,7 +211,7 @@ for album_key in readme_yaml:
             photo_model.exif = tag_text
             photo_model.name = name
             photo_model.desc = desc
-            photo_model.location = loc_model,
+            photo_model.location = loc_model
             photo_model.exif_data = exif_model
             photo_model.save()
         # copy location only to speed up the location page.

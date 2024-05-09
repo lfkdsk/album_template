@@ -87,10 +87,10 @@ def get_country(lo, hi):
     return ''
 
 def to_location(photo_model, data) -> Location:
-    if not data:
-        return
     if photo_model:
         return photo_model.location
+    if not data:
+        return None
     lo, hi = data[0], data[1]
     return Location.create(
         lo=lo, 
