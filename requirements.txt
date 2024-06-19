@@ -5,3 +5,4 @@ exifread
 peewee==3.17.0
 Shapely==2.0.2
 fiona==1.9.5
+numpy<2
