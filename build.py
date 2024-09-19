@@ -227,7 +227,7 @@ for album_key in readme_yaml:
   exif: "{tag_text}"
   desc: "{desc}"
 '''
-        rss_text += f'- <img src="{img_url}">\n'
+        rss_text += f'- <img src="{img_url}"/>\n'
         photos += p
 
     dir_linked_photos = Photo.select().where(Photo.dir == album_model)
