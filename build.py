@@ -113,7 +113,7 @@ for album_key in readme_yaml:
 
     for sorted_file in sorted_files:
         name, ext = os.path.splitext(sorted_file)
-        if ext in ['.md', '.yml',] or name in ['.DS_Store'] or name.startswith('__'):
+        if ext in ['.md', '.yml',] or name in ['.DS_Store', '.gitkeep'] or name.startswith('__'):
             print(f"skip {name}{ext}")
             continue
         desc = ' - · - '
