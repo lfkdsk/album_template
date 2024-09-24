@@ -61,6 +61,14 @@ for d in y:
         pic.tag = tag
         pic.save()
 
+for d in y:
+    element = y[d]
+    url = element['url']
+    gallery_dir = f'gallery/{url}'
+    sorted_files = natsorted(os.listdir(gallery_dir))
+    index = 0
+    if index > 10:
+        continue
     for img_name in sorted_files:
         img_path = f'{gallery_dir}/{img_name}'
         pathkey = f'{url}/{img_name}'
@@ -73,5 +81,6 @@ for d in y:
         print('Predicted:', img_path, "\n",  text)
         pic.dsec = text
         pic.save()
+        index += 1
 
 db.close()
