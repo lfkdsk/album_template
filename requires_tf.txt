@@ -7,3 +7,5 @@ peewee
 shapely
 transformers==4.41.2
 einops
+torch==2.3.1
+torchvision==0.18.1
