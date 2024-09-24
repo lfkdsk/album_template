@@ -3,6 +3,7 @@ import numpy as np
 import yaml
 import os
 import shutil
+import gpt as gpt
 import tensorflow as tf
 from natsort import natsorted
 from tensorflow.keras.applications import MobileNetV2
@@ -34,11 +35,14 @@ for d in y:
     url = element['url']
     gallery_dir = f'gallery/{url}'
     sorted_files = natsorted(os.listdir(gallery_dir))
+    # calc tags;
     for img_name in sorted_files:
         img_path = f'{gallery_dir}/{img_name}'
         pathkey = f'{url}/{img_name}'
         pic = Photo.get_or_none(path=pathkey)
         if not pic:
+            continue
+        if pic.tag:
             continue
         img = image.load_img(img_path, target_size=(224, 224))
         x = image.img_to_array(img)
@@ -55,6 +59,19 @@ for d in y:
         print('Predicted:', img_path, result[0])
         tag, _ = Tag.get_or_create(name=pred_label)
         pic.tag = tag
+        pic.save()
+
+    for img_name in sorted_files:
+        img_path = f'{gallery_dir}/{img_name}'
+        pathkey = f'{url}/{img_name}'
+        pic = Photo.get_or_none(path=pathkey)
+        if not pic:
+            continue
+        if pic.desc != ' - · - ':
+            continue
+        text = gpt.generate_desc(img_path)
+        print('Predicted:', img_path, "\n",  text)
+        pic.dsec = text
         pic.save()
 
 db.close()

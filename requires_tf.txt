@@ -5,3 +5,4 @@ pyyaml
 natsort
 peewee
 shapely
+transformers==4.41.2
