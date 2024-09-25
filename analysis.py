@@ -67,7 +67,7 @@ for d in y:
     gallery_dir = f'gallery/{url}'
     sorted_files = natsorted(os.listdir(gallery_dir))
     index = 0
-    if index > 10:
+    if index > 3:
         continue
     for img_name in sorted_files:
         img_path = f'{gallery_dir}/{img_name}'
