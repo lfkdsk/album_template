@@ -87,7 +87,7 @@ db.connect(reuse_if_open=True)
 def timeout(signum, frame):
     db.close()
     print("Time is up!")
-    sys.exit(1)
+    sys.exit(0)
 
 
 def resolve():    
@@ -103,6 +103,6 @@ def resolve():
 
 # 4h
 signal.signal(signal.SIGALRM, timeout)
-signal.alarm(3600)
+signal.alarm(14400)
 
 resolve()
