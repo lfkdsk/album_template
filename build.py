@@ -181,6 +181,10 @@ for album_key in readme_yaml:
 
         # get gps location.
         loc = read_gps(f'./{gallery}/{url}/{sorted_file}')
+        img_key = f'{url}/{sorted_file}'
+        photo_model = Photo.get_or_none(path=img_key)
+        if photo_model:
+            desc = photo_model.desc
         result = {
             'path': f'{url}/{sorted_file}',
             'dir': url,
@@ -192,9 +196,7 @@ for album_key in readme_yaml:
             'desc': desc,
             'exif_data': exif_data
         }
-        img_key = f'{url}/{sorted_file}'
         all_files[img_key] = result
-        photo_model = Photo.get_or_none(path=img_key)
         loc_model = to_location(photo_model, loc)
         if not photo_model:
             photo_model = Photo.create(

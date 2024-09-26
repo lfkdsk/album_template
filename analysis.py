@@ -97,16 +97,12 @@ def resolve():
         img_path = f'gallery/{photo.path}'
         text = gpt.generate_desc(img_path)
         print('Predicted:', img_path, "\n",  text)
-        photo.dsec = text
+        photo.desc = text
         photo.save()
     db.close()
 
 # 4h
 signal.signal(signal.SIGALRM, timeout)
-signal.alarm(14400)
+signal.alarm(3600)
 
-try:
-    resolve()
-except Exception as e:
-    print("Program terminated due to timeout.")
-    db.close()
+resolve()
