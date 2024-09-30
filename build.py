@@ -218,7 +218,15 @@ for album_key in readme_yaml:
             photo_model.save()
         # copy location only to speed up the location page.
         if loc:
-            all_locations[img_key] = all_files[img_key]
+            result = {
+                'path': f'{url}/{sorted_file}',
+                'dir': url,
+                'url': img_url,
+                'thum': img_thumbnail_url,
+                'location': loc,
+                'name': name,
+            }            
+            all_locations[img_key] = result
 
         p = f'''
 - name: {name}
