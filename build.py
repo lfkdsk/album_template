@@ -227,7 +227,6 @@ for album_key in readme_yaml:
   thum: {img_thumbnail_url}
   url: {img_url}
   exif: "{tag_text}"
-  desc: "{desc}"
 '''
         rss_text += f'- <img src="{img_url}"/>\n'
         photos += p
