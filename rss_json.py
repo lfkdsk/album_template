@@ -1,6 +1,7 @@
 from database import *
 
 def rss_template(config):
+    print(config)
     temp = {
         "version": "https://jsonfeed.org/version/1.1",
         "title": config.get('title', ''),
@@ -15,10 +16,11 @@ def rss_template(config):
             }
         ],
         "language": "zh-CN",
+        "follow_challenge": {}
         "items": []
     }
 
-    if not config.get('follow_challenge', None):
+    if config.get('follow_challenge', None):
         temp['follow_challenge'] = config['follow_challenge']
     return temp
 
