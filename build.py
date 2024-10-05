@@ -7,6 +7,7 @@ import exifread
 import hashlib
 from natsort import natsorted
 from database import *
+from rss_json import *
 from tool import *
 
 gen_thumbnail = False
@@ -269,9 +270,15 @@ photos:
     print(f'generate md file for source/gallery/vol{index}.md')
     index += 1
 
-with open(f"./{public}/photos.json", 'w', encoding="utf-8") as index_file:
-    print(f'generate photos.json with {len(all_files)} items.')
-    json.dump(all_files, index_file, ensure_ascii=False)
+# useless now.
+# with open(f"./{public}/photos.json", 'w', encoding="utf-8") as index_file:
+#     print(f'generate photos.json with {len(all_files)} items.')
+#     json.dump(all_files, index_file, ensure_ascii=False)
+
+with open(f"./{public}/feed.json", 'w', encoding="utf-8") as json_feed:
+    template = rss_template(config)
+    result = generate_rss_json(template, config)
+    json.dump(result, json_feed, ensure_ascii=False)
 
 with open("./source/_data/photos.yml", "w", encoding="utf-8") as index_file:
     yaml.safe_dump(all_files, index_file, allow_unicode=True)
