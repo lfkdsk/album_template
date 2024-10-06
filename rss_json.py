@@ -16,7 +16,7 @@ def rss_template(config):
             }
         ],
         "language": "zh-CN",
-        "follow_challenge": {}
+        "follow_challenge": {},
         "items": []
     }
 
