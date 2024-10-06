@@ -1,12 +1,11 @@
 from database import *
 
 def rss_template(config):
-    print(config)
     temp = {
         "version": "https://jsonfeed.org/version/1.1",
-        "title": config.get('title', ''),
-        "home_page_url": config.get('url', ''),
-        "feed_url": config.get('url', '') + "/feed.json",
+        "title": f"{config.get('title', '')} Feed",
+        "home_page_url": f"{config.get('url', '')}/grid-all",
+        "feed_url": f"{config.get('url', '')}/feed.json",
         "description": config.get('description', ''),
         "icon": config.get('icon', ''),
         "favicon": config.get('favicon', ''),
@@ -36,10 +35,10 @@ def generate_rss_json(template, config):
         single = f'{config["url"]}?name={photo.path}'
         tmp = {
             "id": url,
-            "url": url,
-            "external_url": config['url'],
+            "url": single,
+            "external_url": single,
             "title": photo.name,
-            "content_html": photo.desc,
+            "content_html": f'<div><img src="{url}"/><p>{photo.desc}</p></div>',
             "image": url,
             "date_published": exif_date,
             "date_modified": exif_date,

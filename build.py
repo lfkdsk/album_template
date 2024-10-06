@@ -275,10 +275,18 @@ photos:
 #     print(f'generate photos.json with {len(all_files)} items.')
 #     json.dump(all_files, index_file, ensure_ascii=False)
 
+class CustomJSONEncoder(json.JSONEncoder):
+    def encode(self, o):
+        result = super().encode(o)
+        result = result.replace(r'\u003c', '<')
+        result = result.replace(r'\u003e', '>')
+        result = result.replace(r'\u0026', '&')
+        return result
+
 with open(f"./{public}/feed.json", 'w', encoding="utf-8") as json_feed:
     template = rss_template(config)
     result = generate_rss_json(template, config)
-    json.dump(result, json_feed, ensure_ascii=False)
+    json.dump(result, json_feed, cls=CustomJSONEncoder, ensure_ascii=False)
 
 with open("./source/_data/photos.yml", "w", encoding="utf-8") as index_file:
     yaml.safe_dump(all_files, index_file, allow_unicode=True)
