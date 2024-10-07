@@ -30,7 +30,9 @@ def generate_rss_json(template, config):
                             .order_by(Case(None, [(EXIFData.date.is_null(), 1)], 0), EXIFData.date.desc()))
 
     for photo in photos_sorted_by_date:
-        exif_date = photo.exif_data.date if photo.exif_data else '0000-00-00 08:59:12'
+        exif_date = photo.exif_data.date if photo.exif_data else '1970-02-06 08:59:12'
+        if not photo.exif_data:
+            continue
         url = config['base_url'] + "/" + photo.path
         single = f'{config["url"]}?name={photo.path}'
         tmp = {
