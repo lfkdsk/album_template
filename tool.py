@@ -11,7 +11,7 @@ import fiona  # 用于读取 Shapefile
 def thumbnail_image(input_file, output_file, max_size=(1000, 1000), resample=3, ext='webp'):
     im = Image.open(input_file)
     im = ImageOps.exif_transpose(im)
-    im.thumbnail(max_size, resample=resample)
+    im.thumbnail(max_size, resample=resample, reducing_gap=3.0)
     im.save(output_file, format=ext, optimize=True)
 
 # barrowed from 
