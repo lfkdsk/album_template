@@ -108,7 +108,9 @@ for album_key in readme_yaml:
     sorted_files = natsorted(os.listdir(gallery_dir))
     pathlib.Path(f"./{thumbnail_public}/{url}/").mkdir(parents=True, exist_ok=True)
     cover, _ = os.path.splitext(cover)
+    cover_url = f'{base_url}/{cover}.webp'
     cover = f'{thumbnail_url}/{cover}.webp'
+    rss_text += f'- <img src="{cover_url}"/>\n'
 
     album_model, _ = Album.get_or_create(dir=url)
 
@@ -237,7 +239,8 @@ for album_key in readme_yaml:
   url: {img_url}
   exif: "{tag_text}"
 '''
-        rss_text += f'- <img src="{img_url}"/>\n'
+        if img_url != cover_url:
+            rss_text += f'- <img src="{img_url}"/>\n'
         photos += p
 
     dir_linked_photos = Photo.select().where(Photo.dir == album_model)
