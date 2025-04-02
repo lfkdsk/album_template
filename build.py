@@ -300,4 +300,6 @@ with open("./source/_data/location.yml", "w", encoding="utf-8") as index_file:
 db.close()
 
 shutil.copyfile(f'./{gallery}/README.yml', f'./{thumbnail_public}/README.yml')
-shutil.copyfile(f'./CNAME', f'./{public}/CNAME')
+
+if os.path.exists(f'./{gallery}/CNAME'):
+    shutil.copyfile(f'./{gallery}/CNAME', f'./{public}/CNAME')
