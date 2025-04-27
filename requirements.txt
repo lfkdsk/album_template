@@ -1,7 +1,7 @@
 pyyaml
 natsort
 Pillow==10.0.1
-exifread
+exifread==3.0.0
 peewee==3.17.0
 Shapely==2.0.2
 fiona==1.9.5

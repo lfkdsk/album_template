@@ -47,7 +47,7 @@ config = {}
 # re-generate config file.
 with open(f"./{gallery}/CONFIG.yml", 'r', encoding="utf-8") as gallery_config_file, \
      open("./_config.yml", "r+", encoding="utf-8") as template_config_file, \
-     open("./new_config.yml", "w", encoding="utf-8") as new_config_file: 
+     open("./new_config.yml", "w", encoding="utf-8") as new_config_file:
     gallery_config, template_config = yaml.safe_load(gallery_config_file), yaml.safe_load(template_config_file)
     if css_file_name:
         template_config['custom_css'] = css_file_name
@@ -228,7 +228,7 @@ for album_key in readme_yaml:
                 'thum': img_thumbnail_url,
                 'location': loc,
                 'name': name,
-            }            
+            }
             all_locations[img_key] = result
 
         p = f'''
@@ -248,7 +248,7 @@ for album_key in readme_yaml:
         if os.path.exists(f'./{gallery}/{item.path}'):
            continue
         print(f'delete {item.path} row instance.')
-        item.delete_instance() 
+        item.delete_instance()
 
     tmp = f'''
 ---
