@@ -20,8 +20,8 @@ pathlib.Path(f"./{public}/").mkdir(parents=True, exist_ok=True)
 
 db_path = "./public/sqlite.db"
 # init database
-# if os.path.exists(db_path):
-#     os.remove(db_path)
+if os.path.exists(db_path):
+    os.remove(db_path)
 
 db.init(db_path)
 db.connect()
