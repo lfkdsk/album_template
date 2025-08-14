@@ -37,5 +37,6 @@ class Photo(BaseModel):
     location = ForeignKeyField(Location, backref='photo', null=True)
     name = CharField()
     desc = CharField()
+    livephoto = BooleanField(default=False)
     exif_data = ForeignKeyField(EXIFData, backref='photo', null=True)
     tag = ForeignKeyField(Tag, backref='photos', null=True)

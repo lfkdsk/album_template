@@ -116,7 +116,7 @@ for album_key in readme_yaml:
 
     for sorted_file in sorted_files:
         name, ext = os.path.splitext(sorted_file)
-        if ext in ['.md', '.yml',] or name in ['.DS_Store', '.gitkeep'] or name.startswith('__'):
+        if ext in ['.md', '.yml', '.mov'] or name in ['.DS_Store', '.gitkeep'] or name.startswith('__'):
             print(f"skip {name}{ext}")
             continue
         desc = ' - · - '
@@ -164,24 +164,19 @@ for album_key in readme_yaml:
             exif_model.save()
         if 'index_yml' in locals() and name in index_yml:
             desc = index_yml[name]['desc']
-        video = ""
+        video_url = ""
+        livephoto = False
         img_url = f'{base_url}/{url}/{sorted_file}'
         img_thumbnail_url = f'{thumbnail_url}/{url}/{name}.webp'
         thumbnail_name =f'./{thumbnail_public}/{url}/{name}.webp'
         # compress image
         if gen_thumbnail or not os.path.exists(thumbnail_name):
             thumbnail_image(f'{gallery_dir}/{sorted_file}', output_file=thumbnail_name, max_size=(thumbnail_size, thumbnail_size))
-        if ext[1:].lower() in ["mov", "mp4"]:
-            is_video = True
-            for thum_name, file in [(os.path.splitext(n)[0], n) for n in sorted_files]:
-                if thum_name == f'__{name}':
-                    video = file
-                    print(f'found video {video}')
-            if video == "":
-                continue # cannot found thumtail.
-            video = f'{base_url}/{url}/{video}'
-            img_url, video = video, img_url
 
+        livevideo = f'{gallery}/{url}/{name}.mov'
+        if os.path.exists(livevideo):
+            video_url = f'{base_url}/{url}/{name}.mov'
+            livephoto = True
         # get gps location.
         loc = read_gps(f'./{gallery}/{url}/{sorted_file}')
         img_key = f'{url}/{sorted_file}'
@@ -209,6 +204,7 @@ for album_key in readme_yaml:
                 name=name,
                 desc=desc,
                 location=loc_model,
+                livephoto=livephoto,
                 exif_data=exif_model,
             )
         else:
@@ -216,6 +212,7 @@ for album_key in readme_yaml:
             photo_model.exif = tag_text
             photo_model.name = name
             photo_model.desc = desc
+            photo_model.livephoto = livephoto
             photo_model.location = loc_model
             photo_model.exif_data = exif_model
             photo_model.save()
@@ -233,7 +230,7 @@ for album_key in readme_yaml:
 
         p = f'''
 - name: {name}
-  video: {video}
+  video: {video_url}
   share: {url}/{sorted_file}
   thum: {img_thumbnail_url}
   url: {img_url}
