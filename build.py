@@ -105,7 +105,8 @@ for album_key in readme_yaml:
         with open(index_yml_name, 'r', encoding="utf-8") as sorted_file:
             index_yml = yaml.safe_load(sorted_file)
 
-    sorted_files = natsorted(os.listdir(gallery_dir))
+    # sorted_files = natsorted(os.listdir(gallery_dir))
+    sorted_files = sort_photos(gallery_dir)
     pathlib.Path(f"./{thumbnail_public}/{url}/").mkdir(parents=True, exist_ok=True)
     cover, _ = os.path.splitext(cover)
     cover_url = f'{base_url}/{cover}.webp'
@@ -294,6 +295,9 @@ with open("./source/_data/photos.yml", "w", encoding="utf-8") as index_file:
 with open("./source/_data/location.yml", "w", encoding="utf-8") as index_file:
     yaml.safe_dump(all_locations, index_file, allow_unicode=True)
 
+db.execute_sql("PRAGMA journal_mode=OFF;")
+db.execute_sql("PRAGMA synchronous=OFF;")
+db.execute_sql("PRAGMA page_size=1024;")
 db.close()
 
 shutil.copyfile(f'./{gallery}/README.yml', f'./{thumbnail_public}/README.yml')

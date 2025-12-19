@@ -7,6 +7,7 @@ from datetime import datetime
 import os
 from shapely.geometry import Point, shape
 import fiona  # 用于读取 Shapefile
+from PIL.ExifTags import TAGS
 
 def thumbnail_image(input_file, output_file, max_size=(1000, 1000), resample=3, ext='webp'):
     im = Image.open(input_file)
@@ -14,8 +15,8 @@ def thumbnail_image(input_file, output_file, max_size=(1000, 1000), resample=3, 
     im.thumbnail(max_size, resample=resample, reducing_gap=3.0)
     im.save(output_file, format=ext, optimize=True)
 
-# barrowed from 
-# https://gist.github.com/snakeye/fdc372dbf11370fe29eb 
+# barrowed from
+# https://gist.github.com/snakeye/fdc372dbf11370fe29eb
 def _convert_to_degress(value):
     """
     Helper function to convert the GPS coordinates stored in the EXIF to degress in float format
@@ -32,7 +33,7 @@ def _convert_to_degress(value):
 def read_gps(file_name: str):
     if not os.path.exists(file_name):
         return []
-    
+
     with open(file_name, 'rb') as f:
         exif_dict = exifread.process_file(f)
         latitude = exif_dict.get('GPS GPSLatitude')
@@ -93,7 +94,36 @@ def to_location(photo_model, data) -> Location:
         return None
     lo, hi = data[0], data[1]
     return Location.create(
-        lo=lo, 
-        hi=hi, 
+        lo=lo,
+        hi=hi,
         country=get_country(hi, lo)
     )
+
+
+def get_exif_datetime(file_path):
+    """从 EXIF 读取拍摄时间，没有则返回 None"""
+    try:
+        with Image.open(file_path) as img:
+            exif = img._getexif()
+            if exif:
+                for tag_id, value in exif.items():
+                    tag = TAGS.get(tag_id)
+                    if tag == "DateTimeOriginal":
+                        return datetime.strptime(value, "%Y:%m:%d %H:%M:%S")
+    except Exception:
+        pass
+    return None
+
+def sort_photos(folder):
+    files = [f for f in os.listdir(folder)]
+
+    def sort_key(filename):
+        dt = get_exif_datetime(os.path.join(folder, filename))
+        if dt:
+            # 有时间的：先按时间，再按文件名
+            return (0, dt, filename.lower())
+        else:
+            # 没时间的：放后面，按文件名
+            return (1, filename.lower())
+
+    return sorted(files, key=sort_key)
