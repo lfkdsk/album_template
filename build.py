@@ -295,9 +295,9 @@ with open("./source/_data/photos.yml", "w", encoding="utf-8") as index_file:
 with open("./source/_data/location.yml", "w", encoding="utf-8") as index_file:
     yaml.safe_dump(all_locations, index_file, allow_unicode=True)
 
-db.execute_sql("PRAGMA journal_mode=OFF;")
-db.execute_sql("PRAGMA synchronous=OFF;")
-db.execute_sql("PRAGMA page_size=1024;")
+# db.execute_sql("PRAGMA journal_mode=OFF;")
+# db.execute_sql("PRAGMA synchronous=OFF;")
+# db.execute_sql("PRAGMA page_size=1024;")
 db.close()
 
 shutil.copyfile(f'./{gallery}/README.yml', f'./{thumbnail_public}/README.yml')

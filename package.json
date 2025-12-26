@@ -38,5 +38,8 @@
     "markdown-it-imsize": "^2.0.1",
     "markdown-it-link-attributes": "^4.0.1",
     "markdown-it-task-lists": "^2.1.1"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
   }
 }
