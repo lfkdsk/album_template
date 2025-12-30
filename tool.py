@@ -64,7 +64,7 @@ def read_gps(file_name: str):
 #   "EXIF LensModel": "iPhone 12 Pro back triple camera 6mm f/2"
 # }
 def to_exif_date(data) -> EXIFData:
-    if not data:
+    if not data or len(data) != 8:
         return
     exif, _ = EXIFData.get_or_create(
         maker=data.get('Image Make'),

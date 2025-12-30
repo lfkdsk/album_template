@@ -163,6 +163,10 @@ for album_key in readme_yaml:
         exif_model = to_exif_date(pure_exif_data)
         if exif_model:
             exif_model.save()
+        else:
+            exif_data = {}
+            tag_text = ''
+            pure_exif_data = {}
         if 'index_yml' in locals() and name in index_yml:
             desc = index_yml[name]['desc']
         video_url = ""
