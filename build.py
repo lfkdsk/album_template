@@ -44,6 +44,7 @@ if not os.path.exists(f"./{gallery}/CONFIG.yml") or not os.path.exists(f'./{gall
     raise "CONFIG or README is null."
 
 config = {}
+default_album_layout = None
 # re-generate config file.
 with open(f"./{gallery}/CONFIG.yml", 'r', encoding="utf-8") as gallery_config_file, \
      open("./_config.yml", "r+", encoding="utf-8") as template_config_file, \
@@ -51,6 +52,7 @@ with open(f"./{gallery}/CONFIG.yml", 'r', encoding="utf-8") as gallery_config_fi
     gallery_config, template_config = yaml.safe_load(gallery_config_file), yaml.safe_load(template_config_file)
     if css_file_name:
         template_config['custom_css'] = css_file_name
+    default_album_layout = gallery_config.get('album_layout') or gallery_config.get('default_album_layout')
     for item in gallery_config:
         print(item)
         template_config[str(item)] = gallery_config[item]
@@ -88,7 +90,7 @@ for album_key in readme_yaml:
     date = element.get('date', '')
     subtitle = element.get('subtitle', '')
     location = element.get('location', [])
-    layout = element.get('layout', 'album')
+    layout = element.get('layout', default_album_layout or 'album')
     style = element.get('style', 'default')
     index_md = f"./{gallery}/{url}/index.md"
     gallery_dir = f"./{gallery}/{url}"
@@ -127,7 +129,6 @@ for album_key in readme_yaml:
         exif_data = {}
         pure_exif_data = {}
         for tag in tags.keys():
-            # print(f"{tag} : {str(tags[tag])}")
             if tag in ['Image Make', 'Image Model', 'EXIF LensModel', 'EXIF FocalLength','EXIF FNumber', 'EXIF ISOSpeedRatings', 'EXIF ExposureTime', 'EXIF DateTimeOriginal']:
               pre = pro = cur = ''
               if tag == 'EXIF FNumber':

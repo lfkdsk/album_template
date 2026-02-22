@@ -65,6 +65,7 @@ def read_gps(file_name: str):
 # }
 def to_exif_date(data) -> EXIFData:
     if not data or len(data) != 8:
+        print("No enough EXIF data found", data)
         return
     exif, _ = EXIFData.get_or_create(
         maker=data.get('Image Make'),
