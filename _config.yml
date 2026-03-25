@@ -158,16 +158,18 @@ algolia:
     - permalink
     - date
 
-# feed:
-#   type: atom
-#   path: atom.xml
-#   limit: false
-#   hub:
-#   content: false
-#   content_limit: 140
-#   content_limit_delim: " "
-#   order_by: -date
-#   template: ./source/atom.xml
+# Use a custom atom.xml template so the feed-root <updated> field uses the
+# most-recently-updated post date rather than new Date(), which would change
+# on every CI build even when no content has changed.
+feed:
+  type: atom
+  path: atom.xml
+  limit: false
+  content: false
+  content_limit: 140
+  content_limit_delim: ' '
+  order_by: -date
+  template: ./source/atom.xml
 
 # jsonContent:
 #   meta: true
