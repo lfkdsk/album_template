@@ -58,7 +58,8 @@ with open(f"./{gallery}/CONFIG.yml", 'r', encoding="utf-8") as gallery_config_fi
         template_config[str(item)] = gallery_config[item]
         config[str(item)] = gallery_config[item]
     print(list(template_config))
-    yaml.safe_dump(template_config, new_config_file, allow_unicode=True)
+    # sort_keys=False to preserve nav (and other) ordering from CONFIG.yml
+    yaml.safe_dump(template_config, new_config_file, allow_unicode=True, sort_keys=False)
 
 thumbnail_url = config["thumbnail_url"]
 base_url = config["base_url"]
