@@ -300,6 +300,63 @@ with open("./source/_data/photos.yml", "w", encoding="utf-8") as index_file:
 with open("./source/_data/location.yml", "w", encoding="utf-8") as index_file:
     yaml.safe_dump(all_locations, index_file, allow_unicode=True)
 
+# Animal analysis data — joins gallery/analysis/animal_index.json with all_files.
+animal_index_path = f"./{gallery}/Analysis/animal_index.json"
+animals_data = []
+if os.path.exists(animal_index_path):
+    with open(animal_index_path, 'r', encoding='utf-8') as f:
+        animal_index = json.load(f)
+
+    def lookup_photo(path):
+        if path in all_files:
+            return all_files[path]
+        base, _ = os.path.splitext(path)
+        for alt in ('.webp', '.jpg', '.jpeg', '.JPG', '.JPEG', '.png', '.PNG'):
+            cand = base + alt
+            if cand in all_files:
+                return all_files[cand]
+        return None
+
+    for species_key, paths in animal_index.items():
+        if species_key.startswith('_'):
+            continue
+        zh, _, en = species_key.partition(' / ')
+        photos = []
+        located = 0
+        for p in paths:
+            meta = lookup_photo(p)
+            if not meta:
+                print(f"[animals] skip missing photo: {p}")
+                continue
+            entry = {
+                'path': meta['path'],
+                'dir': meta['dir'],
+                'name': meta['name'],
+                'url': meta['url'],
+                'thum': meta['thum'],
+                'location': meta.get('location') or [],
+                'desc': meta.get('desc', ''),
+                'exif': meta.get('exif', ''),
+            }
+            if entry['location']:
+                located += 1
+            photos.append(entry)
+        if not photos:
+            continue
+        animals_data.append({
+            'key': species_key,
+            'zh': zh.strip() or species_key,
+            'en': en.strip(),
+            'count': len(photos),
+            'located': located,
+            'cover': photos[0]['thum'],
+            'photos': photos,
+        })
+    animals_data.sort(key=lambda a: (-a['count'], a['zh']))
+
+with open("./source/_data/animals.yml", "w", encoding="utf-8") as index_file:
+    yaml.safe_dump(animals_data, index_file, allow_unicode=True)
+
 # db.execute_sql("PRAGMA journal_mode=OFF;")
 # db.execute_sql("PRAGMA synchronous=OFF;")
 # db.execute_sql("PRAGMA page_size=1024;")

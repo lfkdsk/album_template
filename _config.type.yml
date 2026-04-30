@@ -17,7 +17,7 @@ ver: 0.4.6
 favicon: https://imgur.lzmun.com/picgo/after2022/tripper2whitefull.png_avatar
 avatar: https://imgur.lzmun.com/picgo/after2022/tripper2colorfull.png_avatar
 apple_icon:
-  # iPhone 57x57 
+  # iPhone 57x57
   iphone: https://imgur.lzmun.com/picgo/after2022/tripper2color.png_iPhone
   # iPad 72x72
   ipad: https://imgur.lzmun.com/picgo/after2022/tripper2color.png_RetinaiPad
@@ -25,7 +25,7 @@ apple_icon:
   iphone_hd: https://imgur.lzmun.com/picgo/after2022/tripper2color.png_iPhoneHD
   # Retina iPad 144x144
   ipad_hd: https://imgur.lzmun.com/picgo/after2022/tripper2color.png_RetinaiPad
-  
+
 # ---------------------------------------------------------------
 # Style Settings 样式设置
 # ---------------------------------------------------------------
@@ -37,8 +37,8 @@ apple_icon:
 schemes: m3
 
 # Fonts
-# Use LXGW ｜ 
-fonts: 
+# Use LXGW ｜
+fonts:
 
 # Color
 color:
@@ -51,7 +51,7 @@ color:
 # to https://iconpark.oceanengine.com/home get nav_style_src links
 # Use text ｜ icon
 nav_style: icon
-nav_style_src: https://lf1-cdn-tos.bytegoofy.com/obj/iconpark/icons_29703_16.0f9623ad85e64efb07f6dddba36807a6.js
+nav_style_src: https://lf1-cdn-tos.bytegoofy.com/obj/iconpark/icons_29703_17.177a29d18fca338a8cf9359d7fd76670.js
 
 # Random Pictures
 random_pic_switch: false
@@ -59,7 +59,7 @@ random_pics: 19
 random_thumbnail: https://cdn.jsdelivr.net/gh/aiokr/hexo-theme-type-random_pics@v1.0.0/randompic-
 # random_thumbnail: ../img/random/randompic-
 
-# Post 
+# Post
 post_toc: true
 
 # ---------------------------------------------------------------
@@ -69,13 +69,13 @@ post_toc: true
 # ---------------------------------------------------------------
 
 # Header Cover 首页封面背景图
-header: 
+header:
   img: 'https://imgur.lzmun.com/picgo/after2022/6DD1FBC3-AD8A-4340-842D-6ACF531F8291_1_105_c.jpeg_itp'
 
 # Header Links 首页导航连接
 search_btn: false
 nav:
-  归档: 
+  归档:
     link: https://lfkdsk.github.io
     icon: inbox
   # 影像:
@@ -104,11 +104,11 @@ cover_links:
 # Social link 社交链接
 social_link:
   # 微信二维码 显示在首页封面卡片底部
-  wechat_personal: 
+  wechat_personal:
   # 微信个人号
     switch: false
     src: https://imgur.lzmun.com/picgo/20200324090429.jpg
-  wechat_public: 
+  wechat_public:
   # 微信公众号
     switch: false
     src: https://open.weixin.qq.com/qr/code?username=itypen
@@ -121,11 +121,11 @@ start_time: 2017
 # 如果设置 count 选项，需要运行 npm install hexo-symbols-count-time --save
 # 'count' need run 'npm install hexo-symbols-count-time --save'
 count: false
-icp: 
+icp:
 
 # CDN LOGO
 # Use upyun | vercel | self
-footer_logo: 
+footer_logo:
   use: self
   upyun: '../img/upyun.png'
   vercel: '../img/vercel-logotype-dark.svg'
@@ -168,7 +168,7 @@ photography_page:
 comment:
   cusdis:
     host:
-    app_id: 
+    app_id:
   waline:
     serverurl: https://comment.tripper.press/
 
@@ -187,22 +187,22 @@ busuanzi: true
 # cloudflare-workers-async-google-analytics
 # if use is default, it will use analytics.js
 # if use is cf_async, look at the https://github.com/SukkaW/cloudflare-workers-async-google-analytics to learn more
-# if use is gtag，will use Google GA 4 id gtag.js 
+# if use is gtag，will use Google GA 4 id gtag.js
 # 如果 use 项选择 default，将使用 analytics.js 文件接入谷歌分析
 # 如果 use 项选择 cf_async，请浏览 https://github.com/SukkaW/cloudflare-workers-async-google-analytics 进行配置
 # 如果 use 项选择 gtag，将使用 Google 全局网站代码 (gtag.js) 接入谷歌分析
 # Use: default | cf_async | gtag
-google_analytics: 
+google_analytics:
   use: gtag
-  ga_id: 
-  ga_api: 
+  ga_id:
+  ga_api:
   gtag_id: G-8TMSDJG47Q
 
 # umami Analytics
-umami_analytics: 
+umami_analytics:
   use: false
-  id: 
-  src: 
+  id:
+  src:
 
 # Vercel Audiences Analytics
 vercel_analytics:
@@ -211,7 +211,7 @@ vercel_analytics:
 # Howxm
 howxm_analytics:
   use: false
-  appid: 71bfe8d1-4930-430e-bc42-fa43202e93b4 
+  appid: 71bfe8d1-4930-430e-bc42-fa43202e93b4
 
 # chart.js
 # https://www.chartjs.org/
@@ -234,7 +234,7 @@ cdn:
 # PWA 尚是一个实验性功能，不建议您启用。
 # 如果需要启用，需要手动创立 manifest.json 文件，并在生成网站是复制到 public 目录下。
 # 暂时没有提供 service-worker.js 文件
-pwa: 
+pwa:
   use: true
   theme_color: '#71afdd'
 
