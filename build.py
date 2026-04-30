@@ -301,8 +301,8 @@ with open("./source/_data/photos.yml", "w", encoding="utf-8") as index_file:
 with open("./source/_data/location.yml", "w", encoding="utf-8") as index_file:
     yaml.safe_dump(all_locations, index_file, allow_unicode=True)
 
-# Animal analysis data — joins gallery/analysis/animal_index.json with all_files.
-animal_index_path = f"./{gallery}/Analysis/animal_index.json"
+# Animal analysis data — joins gallery/.analysis/animal_index.json with all_files.
+animal_index_path = f"./{gallery}/.analysis/animal_index.json"
 animals_data = []
 if os.path.exists(animal_index_path):
     with open(animal_index_path, 'r', encoding='utf-8') as f:
