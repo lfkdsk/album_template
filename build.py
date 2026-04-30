@@ -358,6 +358,21 @@ if os.path.exists(animal_index_path):
 with open("./source/_data/animals.yml", "w", encoding="utf-8") as index_file:
     yaml.safe_dump(animals_data, index_file, allow_unicode=True)
 
+# Annual summary — copy gallery/.analysis/annual-summary/<year>.json into public/.
+# Theme's summary.ejs reads these to override the RANDOM monthly photo pick.
+annual_summary_src = f"./{gallery}/.analysis/annual-summary"
+annual_summary_dst = f"./{public}/annual-summary"
+if os.path.exists(annual_summary_src):
+    pathlib.Path(annual_summary_dst).mkdir(parents=True, exist_ok=True)
+    for fname in os.listdir(annual_summary_src):
+        if not fname.endswith(".json"):
+            continue
+        shutil.copyfile(
+            os.path.join(annual_summary_src, fname),
+            os.path.join(annual_summary_dst, fname),
+        )
+        print(f"[annual-summary] copy {fname}")
+
 # db.execute_sql("PRAGMA journal_mode=OFF;")
 # db.execute_sql("PRAGMA synchronous=OFF;")
 # db.execute_sql("PRAGMA page_size=1024;")
