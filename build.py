@@ -125,7 +125,12 @@ for album_key in readme_yaml:
             continue
         desc = ' - · - '
         exf = open(f'{gallery_dir}/{sorted_file}', 'rb')
-        tags = exifread.process_file(exf)
+        try:
+            tags = exifread.process_file(exf)
+        except Exception as e:
+            print("EXIF parse failed:", e, f'{gallery_dir}/{sorted_file}')
+            continue
+            # tags = exifread.process_file(exf)
         tag_text = ''
         exif_data = {}
         pure_exif_data = {}
