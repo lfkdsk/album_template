@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title><%- config.title %></title>
+  <subtitle><%- config.subtitle %></subtitle>
+  <link href="<%- url_for(config.feed.path) %>" rel="self"/>
+  <link href="<%- config.url %>"/>
+  <%# Use the most-recently-updated post date instead of new Date() so the
+      feed root <updated> field does not change on every build when no content
+      has actually changed. %>
+  <updated><%- posts.length > 0 ? posts.first().updated.toISOString() : '2020-01-01T00:00:00.000Z' %></updated>
+  <id><%- config.url %>/</id>
+  <author>
+    <name><%- config.author %></name>
+  </author>
+  <% posts.each(function(post){ %>
+  <entry>
+    <title><%- post.title %></title>
+    <link href="<%- post.permalink %>"/>
+    <id><%- post.permalink %></id>
+    <published><%- post.date.toISOString() %></published>
+    <updated><%- post.updated.toISOString() %></updated>
+    <% if (post.tags && post.tags.length){ %>
+    <% post.tags.each(function(tag){ %>
+    <category term="<%- tag.name %>"/>
+    <% }); %>
+    <% } %>
+  </entry>
+  <% }); %>
+</feed>

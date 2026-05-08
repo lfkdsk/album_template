@@ -5,6 +5,7 @@ import pathlib
 import shutil
 import exifread
 import hashlib
+from datetime import datetime, timedelta
 from natsort import natsorted
 from database import *
 from rss_json import *
@@ -97,6 +98,14 @@ for album_key in readme_yaml:
     gallery_dir = f"./{gallery}/{url}"
     rss_text = ''
     text = ''
+
+    # Albums without an explicit date in README.yml would get the file mtime
+    # (= CI build time) as their hexo post date, causing every generated file
+    # that renders a post date to change on every daily cron build. Derive a
+    # stable, deterministic date from the album URL instead.
+    if not date:
+        hash_int = int(hashlib.sha256(url.encode()).hexdigest(), 16)
+        date = (datetime(2020, 1, 1) + timedelta(days=hash_int % 1461)).strftime('%Y-%m-%d')
 
     if os.path.exists(f"./{gallery}/{url}/index.md"):
         index_file = open(index_md, 'r')
