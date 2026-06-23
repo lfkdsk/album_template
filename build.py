@@ -119,6 +119,10 @@ for album_key in readme_yaml:
 
     # sorted_files = natsorted(os.listdir(gallery_dir))
     sorted_files = sort_photos(gallery_dir)
+    # Map lower-cased name -> real filename so Live Photo .mov/.MOV lookups are
+    # case-insensitive while the generated URL keeps the real on-disk case
+    # (iPhone exports .MOV; GitHub Pages on Linux is case-sensitive).
+    mov_files = {f.lower(): f for f in sorted_files if os.path.splitext(f)[1].lower() == '.mov'}
     pathlib.Path(f"./{thumbnail_public}/{url}/").mkdir(parents=True, exist_ok=True)
     cover, _ = os.path.splitext(cover)
     cover_url = f'{base_url}/{cover}.webp'
@@ -129,7 +133,7 @@ for album_key in readme_yaml:
 
     for sorted_file in sorted_files:
         name, ext = os.path.splitext(sorted_file)
-        if ext in ['.md', '.yml', '.mov'] or name in ['.DS_Store', '.gitkeep'] or name.startswith('__'):
+        if ext.lower() in ['.md', '.yml', '.mov'] or name in ['.DS_Store', '.gitkeep'] or name.startswith('__'):
             print(f"skip {name}{ext}")
             continue
         desc = ' - · - '
@@ -194,9 +198,9 @@ for album_key in readme_yaml:
         if gen_thumbnail or not os.path.exists(thumbnail_name):
             thumbnail_image(f'{gallery_dir}/{sorted_file}', output_file=thumbnail_name, max_size=(thumbnail_size, thumbnail_size))
 
-        livevideo = f'{gallery}/{url}/{name}.mov'
-        if os.path.exists(livevideo):
-            video_url = f'{base_url}/{url}/{name}.mov'
+        livevideo = mov_files.get(f'{name}.mov'.lower())
+        if livevideo:
+            video_url = f'{base_url}/{url}/{livevideo}'
             livephoto = True
         # get gps location.
         loc = read_gps(f'./{gallery}/{url}/{sorted_file}')
