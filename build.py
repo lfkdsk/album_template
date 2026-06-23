@@ -5,6 +5,8 @@ import pathlib
 import shutil
 import exifread
 import hashlib
+import subprocess
+import re
 from datetime import datetime, timedelta
 from natsort import natsorted
 from database import *
@@ -64,6 +66,37 @@ with open(f"./{gallery}/CONFIG.yml", 'r', encoding="utf-8") as gallery_config_fi
 
 thumbnail_url = config["thumbnail_url"]
 base_url = config["base_url"]
+# Pin base_url to the gallery's exact commit instead of a moving @branch ref.
+# jsDelivr caches the @branch->commit resolution for ~12h, so after updating a
+# file (e.g. fixing a Live Photo's clap atom) the @master URL keeps serving the
+# old bytes for up to 12h and per-file purges don't help -- they re-fetch at the
+# still-stale ref. A commit-pinned URL is immutable, so every deploy that
+# changes the gallery automatically gets fresh, never-stale media URLs.
+try:
+    gallery_sha = subprocess.check_output(
+        ["git", "-C", f"./{gallery}", "rev-parse", "HEAD"],
+        stderr=subprocess.DEVNULL,
+    ).decode().strip()
+    pinned_base_url = re.sub(
+        r"(https?://cdn\.jsdelivr\.net/gh/[^/@]+/[^/@]+)@[^/]+",
+        rf"\g<1>@{gallery_sha}",
+        base_url,
+    )
+    if pinned_base_url != base_url:
+        dirty = subprocess.run(
+            ["git", "-C", f"./{gallery}", "status", "--porcelain"],
+            capture_output=True, text=True,
+        ).stdout.strip()
+        if dirty:
+            print(f"WARNING: ./{gallery} has uncommitted changes -- pinned URLs "
+                  f"use HEAD ({gallery_sha[:10]}), not the working tree; commit & "
+                  f"push the gallery before deploying or jsDelivr will 404 / lag.")
+        print(f"pin base_url -> {pinned_base_url}")
+        base_url = pinned_base_url
+    else:
+        print(f"base_url is not a jsDelivr @ref URL; leaving as-is: {base_url}")
+except Exception as e:
+    print(f"could not pin base_url to a commit ({e}); using {base_url}")
 thumbnail_size = config.get("thumbnail_size", 1000)
 if not base_url or not base_url:
     raise "need set base url in github CONFIG.yml ."
