@@ -46,6 +46,34 @@ if os.path.exists(f"./{gallery}/style.css"):
 if not os.path.exists(f"./{gallery}/CONFIG.yml") or not os.path.exists(f'./{gallery}/README.yml'):
     raise "CONFIG or README is null."
 
+# 手写页面必须自带 date:。缺了的话 hexo 会退回文件 mtime——而 git 不保存 mtime，
+# CI 每次 checkout 都把它重置成当下，于是 content.json / archives / rss 里的日期
+# 每天都变，即使相册内容一个字没动，也会在 gh-pages 上堆出一串纯时间戳的空提交。
+# 这类问题不报错就只能靠某天翻 commit 历史才发现，所以让它在构建时立刻失败：
+# 站点会停在上一次的好状态，而修复只是补一行 front-matter。
+# source/gallery/vol*.md 不在检查范围内——那些是本脚本自己生成的，日期在下面
+# 由 URL 派生（见 hash_int 那段），本来就是确定的。
+_dateless = []
+for _root, _dirs, _files in os.walk('./source'):
+    if 'gallery' in _root.split(os.sep) and _root.endswith('gallery'):
+        _files = [f for f in _files if not f.startswith('vol')]
+    for _f in _files:
+        # .html 也要查：source/search/index.html 就带 front-matter，一样会
+        # 因为缺 date 而退回 mtime（第一版检查只扫 .md，正好漏了它）。
+        if not _f.endswith(('.md', '.html')):
+            continue
+        _p = os.path.join(_root, _f)
+        with open(_p, 'r', encoding='utf-8') as _fh:
+            if not re.search(r'^date:', _fh.read(), re.M):
+                _dateless.append(_p)
+if _dateless:
+    raise SystemExit(
+        '以下页面缺少 date: front-matter，会让 hexo 退回文件 mtime，'
+        '导致每日构建产生无意义的空提交：\n  '
+        + '\n  '.join(sorted(_dateless))
+        + '\n\n补一行即可，例如 date: 2026-01-01 12:00:00'
+    )
+
 config = {}
 default_album_layout = None
 # re-generate config file.

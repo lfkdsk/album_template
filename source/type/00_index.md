@@ -3,6 +3,7 @@ title: Hexo-Theme-Type 文档
 author: aiokr
 permalink: '/type/'
 abbrlink: '8998'
+date: 2023-08-18 11:02:57
 ---
 
 ## 简介
