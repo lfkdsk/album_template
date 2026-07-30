@@ -63,7 +63,7 @@ hexo g -f --config ./new_config.yml && hexo s --config ./new_config.yml
 
 ## 在导航里露出入口
 
-入口在主仓库的 gallery `CONFIG.yml` 里加一行（也可以放主题的 `_config.type.yml`，但 gallery 配置优先级更高）：
+入口在 gallery 仓库的 `CONFIG.yml` 里加一行（`nav` 读的是站点配置 `config.nav`，build.py 会把 `CONFIG.yml` 的顶层 key 合并进 `new_config.yml`）：
 
 ```yaml
 nav:
