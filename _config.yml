@@ -53,6 +53,10 @@ code_dir: downloads/code
 i18n_dir: :languages
 skip_render:
   - admin/*
+  # manifest.json 是静态资源，不该进渲染管线。被当成 page 处理时它会拿到文件
+  # mtime 作为日期，而 git 不保存 mtime、CI 每次 checkout 都重置，于是
+  # content.json 里它那条日期每天都变，凭空产生空提交。
+  - manifest.json
 
 # Writing
 new_post_name: :title.md # File name of new posts
