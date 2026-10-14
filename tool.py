@@ -1,14 +1,14 @@
-
 from PIL import Image, ImageOps
 import exifread
 import os
 from database import *
 from datetime import datetime
-import os
 from shapely.geometry import Point, shape
+from shapely.prepared import prep
 import fiona  # 用于读取 Shapefile
 from PIL.ExifTags import TAGS
 
+# input_file 可以是路径，也可以是 BytesIO（build 时原图直接从 git 对象库读进内存）。
 def thumbnail_image(input_file, output_file, max_size=(1000, 1000), resample=3, ext='webp'):
     im = Image.open(input_file)
     im = ImageOps.exif_transpose(im)
@@ -30,29 +30,67 @@ def _convert_to_degress(value):
 
     return d + (m / 60.0) + (s / 3600.0)
 
-def read_gps(file_name: str):
-    if not os.path.exists(file_name):
+def read_gps(exif_dict):
+    """从 exifread.process_file 的结果里取 [lat, lon]，没有就返回 []。"""
+    latitude = exif_dict.get('GPS GPSLatitude')
+    latitude_ref = exif_dict.get('GPS GPSLatitudeRef')
+    longitude = exif_dict.get('GPS GPSLongitude')
+    longitude_ref = exif_dict.get('GPS GPSLongitudeRef')
+    if latitude:
+        lat_value = _convert_to_degress(latitude)
+        if latitude_ref.values != 'N':
+            lat_value = -lat_value
+    else:
         return []
+    if longitude:
+        lon_value = _convert_to_degress(longitude)
+        if longitude_ref.values != 'E':
+            lon_value = -lon_value
+    else:
+        return []
+    return [lat_value, lon_value]
 
-    with open(file_name, 'rb') as f:
-        exif_dict = exifread.process_file(f)
-        latitude = exif_dict.get('GPS GPSLatitude')
-        latitude_ref = exif_dict.get('GPS GPSLatitudeRef')
-        longitude = exif_dict.get('GPS GPSLongitude')
-        longitude_ref = exif_dict.get('GPS GPSLongitudeRef')
-        if latitude:
-            lat_value = _convert_to_degress(latitude)
-            if latitude_ref.values != 'N':
-                lat_value = -lat_value
-        else:
-            return []
-        if longitude:
-            lon_value = _convert_to_degress(longitude)
-            if longitude_ref.values != 'E':
-                lon_value = -lon_value
-        else:
-            return []
-        return [lat_value, lon_value]
+def parse_exif_tags(tags):
+    """把 exifread 的 tags 转成 (tag_text, exif_data, pure_exif_data)。
+
+    exif_data 是带单位的展示值，pure_exif_data 是写进 EXIFData 表的原始值。
+    """
+    tag_text = ''
+    exif_data = {}
+    pure_exif_data = {}
+    for tag in tags.keys():
+        if tag in ['Image Make', 'Image Model', 'EXIF LensModel', 'EXIF FocalLength','EXIF FNumber', 'EXIF ISOSpeedRatings', 'EXIF ExposureTime', 'EXIF DateTimeOriginal']:
+          pre = pro = cur = ''
+          if tag == 'EXIF FNumber':
+              pre = 'F'
+              cur = str(round(eval(str(tags[tag])), 1))
+          elif tag == 'EXIF ISOSpeedRatings':
+              pre = 'ISO '
+              cur = str(eval(str(tags[tag])))
+          elif tag == 'EXIF ExposureTime':
+              pro = 's'
+              cur = str(tags[tag])
+              resu = cur.split('/')
+              # calc for iPhone with expo time like:
+              if len(resu) == 2 and resu[0] != '1':
+                a, b = eval(resu[0]), eval(resu[1])
+                cur = f'{a/b}' if a > b else f'1/{int(b/a)}'
+          elif tag == 'EXIF DateTimeOriginal':
+              exif_data[tag] = pure_exif_data[tag] = str(tags[tag])
+              continue
+          elif tag == 'EXIF FocalLength':
+              cur = str(round(eval(str(tags[tag])), 1))
+              pro = 'mm'
+          elif tag == 'Image Make':
+              cur = str(tags[tag])
+          else:
+              cur = str(tags[tag])
+          cur_text = pre + cur + pro
+          exif_data[tag] = cur_text
+          pure_exif_data[tag] = cur
+          tag_text += cur_text
+          tag_text += ' '
+    return tag_text, exif_data, pure_exif_data
 
 # "exif_data": {
 #   "Image Make": "Apple",
@@ -79,32 +117,36 @@ def to_exif_date(data) -> EXIFData:
     )
     return exif
 
+_countries = None
+
 def get_country(lo, hi):
-    with fiona.open('ne_110m_admin_0_countries.shp') as records:
-        for record in records:
-            point = Point(lo, hi)
-            country_shape = shape(record['geometry'])
-            if country_shape.contains(point):
-                return record['properties']['NAME']
+    # shapefile 只读一次；prepared geometry 的 contains 和原始 shape 判定结果一致，只是更快。
+    global _countries
+    if _countries is None:
+        shp = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ne_110m_admin_0_countries.shp')
+        with fiona.open(shp) as records:
+            _countries = [(prep(shape(record['geometry'])), record['properties']['NAME']) for record in records]
+    point = Point(lo, hi)
+    for country_shape, name in _countries:
+        if country_shape.contains(point):
+            return name
     return ''
 
-def to_location(photo_model, data) -> Location:
-    if photo_model:
-        return photo_model.location
+def to_location(data, country) -> Location:
     if not data:
         return None
     lo, hi = data[0], data[1]
     return Location.create(
         lo=lo,
         hi=hi,
-        country=get_country(hi, lo)
+        country=country
     )
 
 
-def get_exif_datetime(file_path):
+def get_exif_datetime(fp):
     """从 EXIF 读取拍摄时间，没有则返回 None"""
     try:
-        with Image.open(file_path) as img:
+        with Image.open(fp) as img:
             exif = img._getexif()
             if exif:
                 for tag_id, value in exif.items():
@@ -115,16 +157,16 @@ def get_exif_datetime(file_path):
         pass
     return None
 
-def sort_photos(folder):
-    files = [f for f in os.listdir(folder)]
-
-    def sort_key(filename):
-        dt = get_exif_datetime(os.path.join(folder, filename))
+def sort_photos(files, meta):
+    """files 是 [(文件名, blob sha)]，meta 是 manifest 里按 sha 缓存的元数据。"""
+    def sort_key(item):
+        filename, sha = item
+        dt = meta.get(sha, {}).get('datetime')
         if dt:
             # 有时间的：先按时间，再按文件名
-            return (0, dt, filename.lower())
+            return (0, datetime.strptime(dt, "%Y:%m:%d %H:%M:%S"), filename.lower())
         else:
             # 没时间的：放后面，按文件名
             return (1, filename.lower())
 
-    return sorted(files, key=sort_key)
+    return [filename for filename, _ in sorted(files, key=sort_key)]

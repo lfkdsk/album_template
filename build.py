@@ -3,7 +3,6 @@ import os
 import json
 import pathlib
 import shutil
-import exifread
 import hashlib
 import subprocess
 import re
@@ -12,7 +11,9 @@ from natsort import natsorted
 from database import *
 from rss_json import *
 from tool import *
+import gallery_cache
 
+# True: 无视缓存，重新生成全部缩略图（需要下载全部原图）。
 gen_thumbnail = False
 thumbnail_public = "thumbnail_public"
 public = "public"
@@ -32,7 +33,7 @@ db.create_tables([Album, Tag, Location, EXIFData, Photo])
 
 # check paths.
 if not os.path.exists(f"./{gallery}/"):
-    raise "need git clone gallery first."
+    raise SystemExit("need git clone gallery first.")
 
 # copy custom css
 css_file_name = ''
@@ -138,152 +139,122 @@ if not readme_yaml:
 # overwrite _config theme.
 shutil.copyfile(f'./{gallery}/README.yml', './source/_data/album.yml')
 
+# 照片元数据和缩略图走 thumbnail 分支上的 manifest.json 缓存，只处理新增 / 变化的照片，
+# 见 gallery_cache.py。之后的循环只读缓存和 yml，不再碰原图。
+gallery_tree, photo_meta = gallery_cache.sync(
+    f"./{gallery}", f"./{thumbnail_public}",
+    [readme_yaml[k]['url'] for k in readme_yaml],
+    thumbnail_size, force_thumbnail=gen_thumbnail,
+)
+
 index = 0
 # anlaysis summary
 all_files = {}
 all_locations = {}
 
-for album_key in readme_yaml:
-    title = album_key
-    print(title)
-    element = readme_yaml[album_key]
-    cover = element['cover']
-    url = element['url']
-    hidden = element.get('hidden', False)
-    date = element.get('date', '')
-    subtitle = element.get('subtitle', '')
-    location = element.get('location', [])
-    layout = element.get('layout', default_album_layout or 'album')
-    style = element.get('style', 'default')
-    index_md = f"./{gallery}/{url}/index.md"
-    gallery_dir = f"./{gallery}/{url}"
-    rss_text = ''
-    text = ''
+with db.atomic():
+    for album_key in readme_yaml:
+        title = album_key
+        print(title)
+        element = readme_yaml[album_key]
+        cover = element['cover']
+        url = element['url']
+        hidden = element.get('hidden', False)
+        date = element.get('date', '')
+        subtitle = element.get('subtitle', '')
+        location = element.get('location', [])
+        layout = element.get('layout', default_album_layout or 'album')
+        style = element.get('style', 'default')
+        index_md = f"./{gallery}/{url}/index.md"
+        gallery_dir = f"./{gallery}/{url}"
+        rss_text = ''
+        text = ''
 
-    # Albums without an explicit date in README.yml would get the file mtime
-    # (= CI build time) as their hexo post date, causing every generated file
-    # that renders a post date to change on every daily cron build. Derive a
-    # stable, deterministic date from the album URL instead.
-    if not date:
-        hash_int = int(hashlib.sha256(url.encode()).hexdigest(), 16)
-        date = (datetime(2020, 1, 1) + timedelta(days=hash_int % 1461)).strftime('%Y-%m-%d')
+        # Albums without an explicit date in README.yml would get the file mtime
+        # (= CI build time) as their hexo post date, causing every generated file
+        # that renders a post date to change on every daily cron build. Derive a
+        # stable, deterministic date from the album URL instead.
+        if not date:
+            hash_int = int(hashlib.sha256(url.encode()).hexdigest(), 16)
+            date = (datetime(2020, 1, 1) + timedelta(days=hash_int % 1461)).strftime('%Y-%m-%d')
 
-    if os.path.exists(f"./{gallery}/{url}/index.md"):
-        index_file = open(index_md, 'r')
-        for index_line in index_file.readlines():
-            text += index_line
-    photos = ''
-    index_yml_name = f"./{gallery}/{url}/index.yml"
-    if os.path.exists(index_yml_name):
-        with open(index_yml_name, 'r', encoding="utf-8") as sorted_file:
-            index_yml = yaml.safe_load(sorted_file)
+        if os.path.exists(f"./{gallery}/{url}/index.md"):
+            index_file = open(index_md, 'r')
+            for index_line in index_file.readlines():
+                text += index_line
+        photos = ''
+        index_yml_name = f"./{gallery}/{url}/index.yml"
+        if os.path.exists(index_yml_name):
+            with open(index_yml_name, 'r', encoding="utf-8") as sorted_file:
+                index_yml = yaml.safe_load(sorted_file)
 
-    # sorted_files = natsorted(os.listdir(gallery_dir))
-    sorted_files = sort_photos(gallery_dir)
-    # Map lower-cased name -> real filename so Live Photo .mov/.MOV lookups are
-    # case-insensitive while the generated URL keeps the real on-disk case
-    # (iPhone exports .MOV; GitHub Pages on Linux is case-sensitive).
-    mov_files = {f.lower(): f for f in sorted_files if os.path.splitext(f)[1].lower() == '.mov'}
-    pathlib.Path(f"./{thumbnail_public}/{url}/").mkdir(parents=True, exist_ok=True)
-    cover, _ = os.path.splitext(cover)
-    cover_url = f'{base_url}/{cover}.webp'
-    cover = f'{thumbnail_url}/{cover}.webp'
-    rss_text += f'- <img src="{cover_url}"/>\n'
+        # 文件列表来自 git tree（CI 里工作区没有原图），排序用缓存里的拍摄时间。
+        if url not in gallery_tree:
+            raise FileNotFoundError(f'album dir not found in gallery HEAD: {gallery_dir}')
+        album_shas = dict(gallery_tree[url])
+        sorted_files = sort_photos(gallery_tree[url], photo_meta)
+        # Map lower-cased name -> real filename so Live Photo .mov/.MOV lookups are
+        # case-insensitive while the generated URL keeps the real on-disk case
+        # (iPhone exports .MOV; GitHub Pages on Linux is case-sensitive).
+        mov_files = {f.lower(): f for f in sorted_files if os.path.splitext(f)[1].lower() == '.mov'}
+        pathlib.Path(f"./{thumbnail_public}/{url}/").mkdir(parents=True, exist_ok=True)
+        cover, _ = os.path.splitext(cover)
+        cover_url = f'{base_url}/{cover}.webp'
+        cover = f'{thumbnail_url}/{cover}.webp'
+        rss_text += f'- <img src="{cover_url}"/>\n'
 
-    album_model, _ = Album.get_or_create(dir=url)
+        album_model, _ = Album.get_or_create(dir=url)
 
-    for sorted_file in sorted_files:
-        name, ext = os.path.splitext(sorted_file)
-        if ext.lower() in ['.md', '.yml', '.mov'] or name in ['.DS_Store', '.gitkeep'] or name.startswith('__'):
-            print(f"skip {name}{ext}")
-            continue
-        desc = ' - · - '
-        exf = open(f'{gallery_dir}/{sorted_file}', 'rb')
-        try:
-            tags = exifread.process_file(exf)
-        except Exception as e:
-            print("EXIF parse failed:", e, f'{gallery_dir}/{sorted_file}')
-            continue
-            # tags = exifread.process_file(exf)
-        tag_text = ''
-        exif_data = {}
-        pure_exif_data = {}
-        for tag in tags.keys():
-            if tag in ['Image Make', 'Image Model', 'EXIF LensModel', 'EXIF FocalLength','EXIF FNumber', 'EXIF ISOSpeedRatings', 'EXIF ExposureTime', 'EXIF DateTimeOriginal']:
-              pre = pro = cur = ''
-              if tag == 'EXIF FNumber':
-                  pre = 'F'
-                  cur = str(round(eval(str(tags[tag])), 1))
-              elif tag == 'EXIF ISOSpeedRatings':
-                  pre = 'ISO '
-                  cur = str(eval(str(tags[tag])))
-              elif tag == 'EXIF ExposureTime':
-                  pro = 's'
-                  cur = str(tags[tag])
-                  resu = cur.split('/')
-                  # calc for iPhone with expo time like:
-                  if len(resu) == 2 and resu[0] != '1':
-                    a, b = eval(resu[0]), eval(resu[1])
-                    cur = f'{a/b}' if a > b else f'1/{int(b/a)}'
-              elif tag == 'EXIF DateTimeOriginal':
-                  exif_data[tag] = pure_exif_data[tag] = str(tags[tag])
-                  continue
-              elif tag == 'EXIF FocalLength':
-                  cur = str(round(eval(str(tags[tag])), 1))
-                  pro = 'mm'
-              elif tag == 'Image Make':
-                  cur = str(tags[tag])
-              else:
-                  cur = str(tags[tag])
-              cur_text = pre + cur + pro
-              exif_data[tag] = cur_text
-              pure_exif_data[tag] = cur
-              tag_text += cur_text
-              tag_text += ' '
-        is_video = False
-        exif_model = to_exif_date(pure_exif_data)
-        if exif_model:
-            exif_model.save()
-        else:
-            exif_data = {}
-            tag_text = ''
-            pure_exif_data = {}
-        if 'index_yml' in locals() and name in index_yml:
-            desc = index_yml[name]['desc']
-        video_url = ""
-        livephoto = False
-        img_url = f'{base_url}/{url}/{sorted_file}'
-        img_thumbnail_url = f'{thumbnail_url}/{url}/{name}.webp'
-        thumbnail_name =f'./{thumbnail_public}/{url}/{name}.webp'
-        # compress image
-        if gen_thumbnail or not os.path.exists(thumbnail_name):
-            thumbnail_image(f'{gallery_dir}/{sorted_file}', output_file=thumbnail_name, max_size=(thumbnail_size, thumbnail_size))
+        for sorted_file in sorted_files:
+            name, ext = os.path.splitext(sorted_file)
+            if not gallery_cache.is_photo(sorted_file):
+                print(f"skip {name}{ext}")
+                continue
+            desc = ' - · - '
+            meta = photo_meta[album_shas[sorted_file]]
+            if 'error' in meta:
+                print("EXIF parse failed:", meta['error'], f'{gallery_dir}/{sorted_file}')
+                continue
+            # 每张照片都要新的 dict / list：同一个对象出现两次，yaml 会输出成 &id001 引用。
+            tag_text = meta['exif']
+            exif_data = dict(meta['exif_data'])
+            pure_exif_data = dict(meta['pure_exif_data'])
+            is_video = False
+            exif_model = to_exif_date(pure_exif_data)
+            if exif_model:
+                exif_model.save()
+            else:
+                exif_data = {}
+                tag_text = ''
+                pure_exif_data = {}
+            if 'index_yml' in locals() and name in index_yml:
+                desc = index_yml[name]['desc']
+            video_url = ""
+            livephoto = False
+            img_url = f'{base_url}/{url}/{sorted_file}'
+            img_thumbnail_url = f'{thumbnail_url}/{url}/{name}.webp'
 
-        livevideo = mov_files.get(f'{name}.mov'.lower())
-        if livevideo:
-            video_url = f'{base_url}/{url}/{livevideo}'
-            livephoto = True
-        # get gps location.
-        loc = read_gps(f'./{gallery}/{url}/{sorted_file}')
-        img_key = f'{url}/{sorted_file}'
-        photo_model = Photo.get_or_none(path=img_key)
-        if photo_model:
-            desc = photo_model.desc
-        result = {
-            'path': f'{url}/{sorted_file}',
-            'dir': url,
-            'exif': tag_text,
-            'url': img_url,
-            'thum': img_thumbnail_url,
-            'location': loc,
-            'name': name,
-            'desc': desc,
-            'exif_data': exif_data
-        }
-        all_files[img_key] = result
-        loc_model = to_location(photo_model, loc)
-        if not photo_model:
-            photo_model = Photo.create(
+            livevideo = mov_files.get(f'{name}.mov'.lower())
+            if livevideo:
+                video_url = f'{base_url}/{url}/{livevideo}'
+                livephoto = True
+            # get gps location.
+            loc = list(meta['gps'])
+            img_key = f'{url}/{sorted_file}'
+            result = {
+                'path': f'{url}/{sorted_file}',
+                'dir': url,
+                'exif': tag_text,
+                'url': img_url,
+                'thum': img_thumbnail_url,
+                'location': loc,
+                'name': name,
+                'desc': desc,
+                'exif_data': exif_data
+            }
+            all_files[img_key] = result
+            loc_model = to_location(loc, meta['country'])
+            Photo.create(
                 path=img_key,
                 dir=album_model,
                 exif=tag_text,
@@ -293,28 +264,19 @@ for album_key in readme_yaml:
                 livephoto=livephoto,
                 exif_data=exif_model,
             )
-        else:
-            photo_model.dir = album_model
-            photo_model.exif = tag_text
-            photo_model.name = name
-            photo_model.desc = desc
-            photo_model.livephoto = livephoto
-            photo_model.location = loc_model
-            photo_model.exif_data = exif_model
-            photo_model.save()
-        # copy location only to speed up the location page.
-        if loc:
-            result = {
-                'path': f'{url}/{sorted_file}',
-                'dir': url,
-                'url': img_url,
-                'thum': img_thumbnail_url,
-                'location': loc,
-                'name': name,
-            }
-            all_locations[img_key] = result
+            # copy location only to speed up the location page.
+            if loc:
+                result = {
+                    'path': f'{url}/{sorted_file}',
+                    'dir': url,
+                    'url': img_url,
+                    'thum': img_thumbnail_url,
+                    'location': loc,
+                    'name': name,
+                }
+                all_locations[img_key] = result
 
-        p = f'''
+            p = f'''
 - name: {name}
   video: {video_url}
   share: {url}/{sorted_file}
@@ -322,18 +284,11 @@ for album_key in readme_yaml:
   url: {img_url}
   exif: "{tag_text}"
 '''
-        if img_url != cover_url:
-            rss_text += f'- <img src="{img_url}"/>\n'
-        photos += p
+            if img_url != cover_url:
+                rss_text += f'- <img src="{img_url}"/>\n'
+            photos += p
 
-    dir_linked_photos = Photo.select().where(Photo.dir == album_model)
-    for item in dir_linked_photos:
-        if os.path.exists(f'./{gallery}/{item.path}'):
-           continue
-        print(f'delete {item.path} row instance.')
-        item.delete_instance()
-
-    tmp = f'''
+        tmp = f'''
 ---
 title: {title}
 date: {date}
@@ -352,9 +307,9 @@ photos:
 ---
 {text}
 '''
-    pathlib.Path(f'source/gallery/vol{index}.md').write_text(tmp)
-    print(f'generate md file for source/gallery/vol{index}.md')
-    index += 1
+        pathlib.Path(f'source/gallery/vol{index}.md').write_text(tmp)
+        print(f'generate md file for source/gallery/vol{index}.md')
+        index += 1
 
 # useless now.
 # with open(f"./{public}/photos.json", 'w', encoding="utf-8") as index_file:
