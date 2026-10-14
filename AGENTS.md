@@ -54,6 +54,23 @@ conda activate py38
 python build.py
 ```
 
+`gallery` 必须是 git clone：照片列表取自 `git ls-tree HEAD`，未提交的照片不会出现在产物里。
+
+# 增量构建
+
+CI 里 gallery 是 partial clone（`filter: blob:none`）+ sparse checkout，只检出 yml / md / `.analysis/`，原图一张都不下载。照片元数据和缩略图按 git blob SHA 缓存在 thumbnail 分支的 `manifest.json`，每次只下载、解析新增或变化的照片（`gallery_cache.py`）：
+
+- 缩略图记录来源 SHA（`thumb_owner`），同名替换、删掉后再传同名新图都会重新生成；重命名直接复制旧缩略图。
+- 只增不删：删掉的照片，其缩略图和 manifest 记录都留着。
+- manifest 只是缓存，丢了 / 版本不对就全量重算一次（结果不变，已有缩略图沿用）。改了 `analyze_photo` 的解析逻辑要把 `MANIFEST_VERSION` +1；不要往 manifest 里写手工数据。
+- gallery 是完整 clone 时（本地开发、旧版 workflow）跳过下载，其余流程一样。sqlite.db 仍然每次全量重建，数据来自 manifest + yml。
+
+改动构建逻辑后跑闭环测试（CI 也会跑）：用合成照片模拟新项目首次构建、热缓存、新增、替换、删除、重命名、manifest 丢失等，每一步都要和从零构建、旧版 build.py 的产物完全一致。
+
+```
+python tests/closed_loop.py --legacy-ref 752c505
+```
+
 # 部署指令
 
 ```
